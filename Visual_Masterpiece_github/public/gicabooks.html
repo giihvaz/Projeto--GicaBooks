@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GicaBooks</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%233F7D57'/%3E%3Cpolygon points='6,10 8,3.5 10,10' fill='white'/%3E%3Cpolygon points='14,10 16,3.5 18,10' fill='white'/%3E%3Ccircle cx='12' cy='14' r='6.4' fill='white'/%3E%3Ccircle cx='9.6' cy='13.3' r='1' fill='%233F7D57'/%3E%3Ccircle cx='14.4' cy='13.3' r='1' fill='%233F7D57'/%3E%3Cpolygon points='11.1,15.8 12.9,15.8 12,17' fill='%233F7D57'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Manrope:wght@400;500;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F3F8F4; --paper-alt: #E7F0E9; --card: #FBFDFB;
+    --ink: #183C26; --ink-soft: #52705D;
+    --rose: #8FBF9F; --rose-soft: #DDEEE2; --rose-deep: #3F7D57; --rose-glow: #2F6444;
+    --gold: #D9A566; --sage: #8FA88E; --plum: #7A4B5E;
+    --line: rgba(63,125,87,0.18); --shadow: rgba(63,125,87,0.20);
+    color-scheme: light;
+  }
+  html[data-theme="dark"] {
+    --paper: #111A14; --paper-alt: #19251D; --card: #1E2D23;
+    --ink: #E4F3E8; --ink-soft: #A9C7B2;
+    --rose: #9FD3AE; --rose-soft: #223B2B; --rose-deep: #7CD3A0; --rose-glow: #5BBE86;
+    --gold: #E0B27C; --sage: #9BC198; --plum: #C79BB2;
+    --line: rgba(124,211,160,0.18); --shadow: rgba(124,211,160,0.22);
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background-color: color-mix(in oklab, var(--paper) 96%, var(--rose)); background-image: radial-gradient(circle at 1px 1px, rgba(43,27,34,.045) 1px, transparent 0); background-size: 22px 22px; color: var(--ink); font-family: 'Manrope', sans-serif; -webkit-font-smoothing: antialiased; transition: background-color .35s ease, color .35s ease; }
+  html[data-theme="dark"] body { background-image: radial-gradient(circle at 1px 1px, rgba(245,230,238,.05) 1px, transparent 0); }
+  @media (prefers-reduced-motion: reduce) { *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+  button, textarea, input { font-family: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+  #loadingScreen { position: fixed; inset: 0; z-index: 200; background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+  #loadingScreen svg { width: 70px; height: 70px; animation: pulseCat 1.3s ease-in-out infinite; }
+  #loadingScreen span { font-family: 'Space Mono', monospace; font-size: 12.5px; color: var(--ink-soft); letter-spacing: .04em; }
+  @keyframes pulseCat { 0%,100% { transform: scale(1); opacity:1; } 50% { transform: scale(1.08); opacity:.8; } }
+
+  .theme-fab { position: fixed; top: 20px; right: 20px; z-index: 90; width: 46px; height: 46px; border: none; border-radius: 50%; background: var(--rose-deep); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px -8px var(--shadow); transition: background .3s ease, transform .15s ease; }
+  .theme-fab:hover { transform: scale(1.06); }
+  .theme-fab svg { width: 24px; height: 24px; }
+  .theme-fab .cat-awake { display: block; animation: catWalk 1.4s ease-in-out infinite; }
+  .theme-fab .cat-asleep { display: none; }
+  html[data-theme="dark"] .theme-fab .cat-awake { display: none; }
+  html[data-theme="dark"] .theme-fab .cat-asleep { display: block; }
+  body.app-mode .theme-fab-corner { display: none; }
+  @keyframes catWalk { 0%,100% { transform: translateX(0); } 50% { transform: translateX(1.5px); } }
+
+  .theme-toggle-inline { position: static; width: 40px; height: 40px; flex-shrink: 0; }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  #screen-welcome.active { display: flex; }
+  .welcome-wrap { max-width: 640px; margin: 0 auto; padding: 70px 28px 60px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px; }
+  .welcome-logo { font-family: 'Fraunces', serif; font-style: italic; font-weight: 600; font-size: 24px; }
+  .welcome-logo .logo-gica { color: var(--rose-deep); }
+  .welcome-logo .logo-books { color: #000; font-style: normal; }
+  html[data-theme="dark"] .welcome-logo .logo-books { color: #fff; }
+  .welcome-mascot svg { width: 140px; height: 140px; }
+  .welcome-wrap h1 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 40px; line-height: 1.08; margin: 0; letter-spacing: -0.01em; }
+  .welcome-lede { font-size: 16px; line-height: 1.6; color: var(--ink-soft); margin: 0; max-width: 46ch; }
+  .welcome-bio-card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 22px 26px; text-align: left; box-shadow: 0 20px 40px -30px var(--shadow); }
+  .sobre-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .sobre-avatar { width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0; overflow: hidden; border: 2px solid var(--rose); background: linear-gradient(145deg, var(--rose), var(--rose-deep)); display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; color: #fff; }
+  .sobre-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .sobre-who strong { display: block; font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; }
+  .sobre-who span { font-size: 11px; color: var(--ink-soft); }
+  .welcome-bio-card p { font-size: 14px; line-height: 1.7; margin: 0; color: var(--ink); }
+
+  .bookmark-btn { display: inline-flex; align-items: center; gap: 10px; clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%); padding: 17px 46px 17px 26px; background: var(--rose-deep); color: #FFF6FA; border: none; cursor: pointer; font-weight: 800; font-size: 15px; transition: background .2s ease, transform .15s ease; margin-top: 4px; }
+  .bookmark-btn:hover { background: var(--rose-glow); }
+  .bookmark-btn:active { transform: scale(.97); }
+  .bookmark-btn svg { width: 16px; height: 20px; flex-shrink: 0; }
+  .link-btn { background: none; border: none; color: var(--rose-deep); font-weight: 800; font-size: 13.5px; cursor: pointer; text-decoration: underline; padding: 4px; }
+
+  #screen-auth.active { display: flex; }
+  .auth-wrap { max-width: 440px; margin: 0 auto; padding: 70px 28px 60px; width: 100%; display: flex; flex-direction: column; gap: 22px; }
+  .auth-wrap h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px; margin: 0 0 4px; }
+  .auth-panel > div p { margin: 0; color: var(--ink-soft); font-size: 14px; }
+  .auth-tabs { display: flex; gap: 8px; }
+  .auth-tab { flex: 1; padding: 11px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink-soft); font-weight: 800; font-size: 13px; cursor: pointer; transition: all .2s ease; }
+  .auth-tab.active { background: var(--rose-deep); border-color: var(--rose-deep); color: #FFF6FA; }
+  .auth-panel { display: none; flex-direction: column; gap: 18px; }
+  .auth-panel.active { display: flex; }
+  .auth-error { color: var(--rose-deep); font-size: 13px; margin: -4px 0 0; background: var(--rose-soft); padding: 10px 14px; border-radius: 12px; }
+
+  .field label { display: block; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+  .field input, .field textarea, .field select { width: 100%; font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 500; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--rose-deep); }
+  .field textarea { resize: vertical; font-weight: 400; }
+
+  .avatar-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .avatar-option { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--card); cursor: pointer; transition: all .2s ease; }
+  .avatar-option:hover { border-color: var(--rose); }
+  .avatar-option.selected { border-color: var(--rose-deep); background: var(--rose-soft); }
+  .avatar-option svg { width: 44px; height: 44px; }
+  .avatar-option span { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+  .avatar-option.selected span { color: var(--rose-deep); }
+  .foto-upload { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .foto-preview { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; border: 2px solid var(--rose-deep); flex-shrink: 0; }
+  .foto-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .foto-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .btn-foto { padding: 9px 14px; font-size: 13px; }
+
+
+  .btn { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 14px; padding: 13px 22px; border-radius: 999px; border: 1.5px solid transparent; cursor: pointer; transition: transform .15s ease, background .2s ease, border-color .2s ease, opacity .2s ease; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--rose-deep); color: #FFF6FA; }
+  .btn-primary:hover { background: var(--rose-glow); }
+  .btn-primary:disabled { opacity: .45; cursor: default; pointer-events: none; }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--rose-deep); }
+
+  .app-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 28px; max-width: 1080px; margin: 0 auto; gap: 16px; flex-wrap: wrap; }
+  .app-logo { font-family: 'Fraunces', serif; font-style: italic; font-weight: 600; font-size: 21px; }
+  .app-logo .logo-gica { color: var(--rose-deep); }
+  .app-logo .logo-books { color: #000; font-style: normal; }
+  html[data-theme="dark"] .app-logo .logo-books { color: #fff; }
+  .app-nav { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px; }
+  .app-nav-item { border: none; background: transparent; padding: 9px 15px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); cursor: pointer; transition: all .2s ease; }
+  .app-nav-item.active { background: var(--rose-deep); color: #FFF6FA; }
+  .app-header-right { display: flex; align-items: center; gap: 10px; }
+  .app-user-wrap { position: relative; }
+  .app-user { display: flex; align-items: center; gap: 9px; background: var(--card); border: 1px solid var(--line); padding: 6px 24px 6px 8px; clip-path: polygon(0 0, 86% 0, 100% 50%, 86% 100%, 0 100%); cursor: pointer; font-family: inherit; transition: background .2s ease; }
+  .app-user:hover { background: var(--rose-soft); }
+  .app-user-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: linear-gradient(145deg, var(--rose), var(--rose-deep)); }
+  .app-user-avatar svg { width: 100%; height: 100%; }
+  .app-user-name { font-size: 13px; font-weight: 700; }
+  .user-dropdown { position: absolute; top: calc(100% + 10px); right: 0; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 20px 40px -20px var(--shadow); padding: 6px; min-width: 200px; display: none; flex-direction: column; gap: 2px; z-index: 60; }
+  .user-dropdown.open { display: flex; animation: fadeIn .2s ease; }
+  .user-dropdown-item { display: flex; align-items: center; gap: 10px; text-align: left; padding: 10px 12px; border-radius: 11px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--ink); cursor: pointer; font-family: inherit; }
+  .user-dropdown-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+  .user-dropdown-item:hover { background: var(--rose-soft); color: var(--rose-deep); }
+
+  .app-content { padding: 8px 28px 70px; }
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 26px; gap: 14px; flex-wrap: wrap; }
+  .section-head h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 28px; margin: 0; }
+  .section-head p { color: var(--ink-soft); font-size: 13.5px; margin: 5px 0 0; max-width: 42ch; }
+
+  .shelf-empty { background: var(--card); border: 1.5px dashed var(--rose); border-radius: 22px; padding: 56px 30px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .shelf-empty svg { width: 74px; height: 74px; }
+  .shelf-empty h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; margin: 0; }
+  .shelf-empty p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 4px; max-width: 36ch; }
+
+  .my-shelf { display: flex; align-items: flex-end; gap: 9px; flex-wrap: wrap; row-gap: 12px; min-height: 190px; padding: 0 16px 14px; border-bottom: 6px solid var(--ink); border-radius: 8px 8px 0 0; margin-bottom: 44px; }
+  .spine { border-radius: 4px 4px 2px 2px; cursor: pointer; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px; font-family: 'Space Mono', monospace; font-size: 9.5px; color: rgba(255,255,255,.88); writing-mode: vertical-rl; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); transition: transform .15s ease; position: relative; }
+  .spine:hover { transform: translateY(-5px); }
+  .spine-badge { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); writing-mode: horizontal-tb; width: 15px; height: 15px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; background: rgba(255,255,255,.35); }
+  .spine-badge.lido { background: #fff; color: var(--rose-deep); }
+  .spine-badge.lendo { background: var(--gold); color: #fff; }
+  @keyframes spinePop { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+  .spine-new { transform-origin: bottom; animation: spinePop .5s cubic-bezier(.2,.9,.3,1.25); }
+
+  /* livro finalizado: patina dourada + selo de cera */
+  .spine.spine-lido { filter: saturate(.78) sepia(.16) brightness(1.03); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08), inset 0 0 22px -4px rgba(217,165,102,.55); }
+  .spine.spine-lido::after { content:''; position:absolute; inset:0; background: linear-gradient(160deg, rgba(217,165,102,.22), transparent 55%); pointer-events:none; border-radius:inherit; }
+  .spine-seal { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); writing-mode: horizontal-tb; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--gold); box-shadow: 0 0 0 2px var(--card), 0 2px 6px rgba(0,0,0,.25); z-index: 2; }
+  .spine-seal svg { width: 11px; height: 11px; }
+
+  .toolbar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: center; }
+  .toolbar input { flex: 1; min-width: 200px; font-size: 14px; padding: 12px 16px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+  .toolbar input:focus { outline: none; border-color: var(--rose-deep); }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 26px; }
+  .filter-chip { font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: transparent; color: var(--ink-soft); cursor: pointer; text-transform: uppercase; letter-spacing: .03em; transition: all .2s ease; }
+  .filter-chip:hover { border-color: var(--rose-deep); }
+  .filter-chip.active { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+  .rec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .rec-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 9px; cursor: pointer; transition: transform .15s ease, box-shadow .2s ease; }
+  .rec-card:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -22px var(--shadow); }
+  .rec-card.hidden { display: none; }
+  .book-cover { height: 140px; border-radius: 12px; display: flex; align-items: flex-end; padding: 11px; font-family: 'Space Mono', monospace; font-size: 10.5px; color: rgba(255,255,255,.9); background-size: cover; position: relative; overflow: hidden; }
+  .book-cover::before { content:''; position:absolute; inset:0; background: linear-gradient(115deg, rgba(255,255,255,.16), transparent 40%); pointer-events:none; }
+  .book-cover .cover-icon { position: absolute; top: 10px; right: 10px; width: 26px; height: 26px; opacity: .55; }
+  .book-cover .cover-icon svg { width: 100%; height: 100%; }
+  .book-cover.is-lido { filter: saturate(.8) sepia(.14); }
+  .cover-done-ribbon { position: absolute; top: 10px; left: -30px; width: 130px; text-align: center; padding: 3px 0; background: var(--gold); color: #fff; font-family: 'Space Mono', monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; transform: rotate(-38deg); box-shadow: 0 3px 8px rgba(0,0,0,.22); }
+  .rec-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 16px; margin: 0; line-height: 1.25; }
+  .rec-author { font-size: 12px; color: var(--ink-soft); margin: -5px 0 0; }
+  .rec-blurb { font-size: 12px; line-height: 1.5; color: var(--ink-soft); margin: 0; }
+  .rec-added-by { font-size: 10.5px; color: var(--rose-deep); font-weight: 700; margin: -3px 0 0; }
+  .rec-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+  .book-status-label { font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--ink-soft); }
+  .genre-tag { font-family: 'Space Mono', monospace; font-size: 9.5px; font-weight: 700; background: var(--rose-soft); color: var(--rose-deep); padding: 5px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; }
+  .rec-add-btn { width: 100%; font-weight: 800; font-size: 12.5px; padding: 9px; border-radius: 999px; border: 1.5px solid var(--rose-deep); background: transparent; color: var(--rose-deep); cursor: pointer; transition: all .2s ease; margin-top: 4px; }
+  .rec-add-btn:hover { background: var(--rose-deep); color: #FFF6FA; }
+  .rec-add-btn.added { background: var(--sage); border-color: var(--sage); color: #fff; pointer-events: none; }
+
+  .add-book-toggle-wrap { text-align: right; margin-bottom: 18px; }
+  .add-book-form-wrap { max-height: 0; overflow: hidden; transition: max-height .4s cubic-bezier(.2,.9,.2,1); }
+  .add-book-form-wrap.open { max-height: 640px; margin-bottom: 30px; }
+  .add-book-form { background: var(--card); border: 1.5px dashed var(--rose-deep); border-radius: 20px; padding: 24px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .add-book-form .field.full { grid-column: 1 / -1; }
+  .add-book-note { grid-column: 1 / -1; font-size: 11.5px; color: var(--ink-soft); background: var(--paper-alt); border-radius: 10px; padding: 8px 12px; margin: 0; }
+  .add-book-actions { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(20,10,15,.55); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-backdrop.open { display: flex; animation: fadeIn .25s ease; }
+  .modal-card { background: var(--card); border-radius: 24px; max-width: 440px; width: 100%; padding: 26px; position: relative; max-height: 90vh; overflow-y: auto; }
+  .modal-close { position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--paper-alt); color: var(--ink); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .modal-cover { height: 160px; border-radius: 14px; margin-bottom: 16px; background-size: cover; position: relative; overflow: hidden; }
+  .modal-cover .cover-icon { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; opacity: .55; }
+  .modal-cover .cover-icon svg { width: 100%; height: 100%; }
+  .modal-cover.is-lido { filter: saturate(.8) sepia(.14); }
+  .modal-card h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 21px; margin: 0 0 2px; padding-right: 28px; }
+  .modal-author { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 12px; }
+  .modal-meta { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+  .modal-blurb { font-size: 13.5px; line-height: 1.6; color: var(--ink); margin: 0 0 18px; }
+  .modal-label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 8px; display: block; }
+  .status-row { display: flex; gap: 7px; margin-bottom: 18px; }
+  .status-pill { flex: 1; font-size: 11.5px; font-weight: 700; padding: 8px 4px; border-radius: 999px; border: 1.5px solid var(--line); background: transparent; color: var(--ink-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .2s ease; }
+  .status-pill:hover { border-color: var(--rose-deep); color: var(--ink); }
+  .status-pill.active { background: var(--rose-soft); border-color: var(--rose-deep); color: var(--rose-deep); }
+  .status-pill.active.lido { background: var(--rose-deep); color: #FFF6FA; border-color: var(--rose-deep); }
+  .check-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  .progress-track { height: 8px; background: var(--paper-alt); border-radius: 999px; overflow: hidden; margin-bottom: 6px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--rose), var(--rose-deep)); border-radius: 999px; transition: width .4s ease; }
+  .progress-nums { display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 10.5px; color: var(--ink-soft); margin-bottom: 10px; }
+  .progress-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .progress-input-row input { width: 90px; font-size: 13px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); }
+  .reading-time-note { font-size: 12px; color: var(--ink-soft); margin: 0 0 18px; font-style: italic; }
+
+  .modal-add-prompt { background: var(--rose-soft); border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 18px; }
+  .modal-add-prompt p { margin: 0 0 10px; font-size: 12.5px; color: var(--rose-deep); }
+
+  .comments-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .comments-sub { font-size: 10.5px; color: var(--ink-soft); }
+  .comments-list { display: flex; flex-direction: column; gap: 9px; margin-bottom: 14px; max-height: 170px; overflow-y: auto; }
+  .comment-item { background: var(--paper-alt); border-radius: 12px; padding: 9px 12px; display: flex; gap: 9px; }
+  .comment-avatar { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; background: linear-gradient(145deg, var(--rose), var(--rose-deep)); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .comment-avatar svg { width: 100%; height: 100%; }
+  .comment-body { flex: 1; min-width: 0; }
+  .comment-item .who { font-weight: 800; font-size: 11.5px; margin-bottom: 2px; color: var(--rose-deep); }
+  .comment-item .txt { font-size: 12.5px; line-height: 1.5; overflow-wrap: anywhere; }
+  .comment-item .when { font-size: 9.5px; color: var(--ink-soft); margin-top: 4px; font-family: 'Space Mono', monospace; }
+  .comments-empty, .comments-loading { font-size: 12.5px; color: var(--ink-soft); font-style: italic; margin: 0 0 14px; }
+  .comment-form { display: flex; flex-direction: column; gap: 8px; }
+  .back-btn { margin-bottom: 16px; }
+  .book-page { max-width: 700px; margin: 0 auto; max-height: none; overflow: visible; }
+  .book-page .comments-list { max-height: none; overflow: visible; }
+  .comment-item { flex-direction: column; }
+  .comment-row { display: flex; gap: 9px; }
+  .comment-item .who { background: none; border: none; padding: 0; cursor: pointer; font-family: inherit; text-align: left; }
+  .comment-item .who:hover { text-decoration: underline; }
+  .comment-actions { display: flex; gap: 12px; align-items: center; margin-top: 6px; }
+  .comment-action { background: none; border: none; cursor: pointer; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); padding: 2px 4px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; }
+  .comment-action:hover { color: var(--rose-deep); background: var(--rose-soft); }
+  .comment-action.liked { color: var(--rose-deep); }
+  .comment-replies { margin: 8px 0 0 34px; display: flex; flex-direction: column; gap: 8px; }
+  .comment-replies .comment-item { background: var(--card); border: 1px solid var(--line); }
+  .reply-form { margin: 8px 0 0 34px; display: flex; flex-direction: column; gap: 6px; }
+  .reply-form textarea { width: 100%; font-size: 12.5px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); resize: vertical; }
+  .reply-form .btn { align-self: flex-end; padding: 6px 14px; font-size: 12px; }
+  .public-shelf-note { text-align: center; color: var(--ink-soft); font-size: 12.5px; margin: 0 0 14px; }
+  .comment-form textarea { width: 100%; font-size: 13px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); resize: vertical; }
+  .comment-saved-note { font-size: 11px; color: var(--sage); font-weight: 700; opacity: 0; transition: opacity .3s ease; align-self: flex-end; }
+  .comment-saved-note.show { opacity: 1; }
+  .comment-login-hint { font-size: 12px; color: var(--ink-soft); background: var(--paper-alt); border-radius: 12px; padding: 10px 12px; text-align: center; }
+
+  .modal-remove { width: 100%; text-align: center; font-size: 12px; color: var(--ink-soft); background: none; border: none; cursor: pointer; text-decoration: underline; padding: 4px; margin-top: 8px; }
+  .modal-remove:hover { color: var(--rose-deep); }
+
+  .nota-card { text-align: center; padding-top: 34px; }
+  .nota-avatar { width: 84px; height: 84px; margin: 0 auto 10px; }
+  .nota-avatar svg { width: 100%; height: 100%; }
+  .nota-eyebrow { display: block; font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--rose-deep); margin-bottom: 10px; }
+  .nota-texto { font-family: 'Fraunces', serif; font-size: 16px; line-height: 1.6; color: var(--ink); margin: 0 0 16px; text-align: left; }
+  .nota-assinatura { font-size: 12.5px; color: var(--ink-soft); font-style: italic; }
+
+  .playlist-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; margin-bottom: 14px; }
+  .playlist-by { font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--rose-deep); font-weight: 700; display: block; margin-bottom: 10px; }
+  .playlist-embed-wrap iframe { width: 100%; border-radius: 12px; display: block; }
+  .playlist-comment { font-size: 13px; color: var(--ink); margin: 10px 0 0; line-height: 1.5; }
+  .playlist-list { display: flex; flex-direction: column; gap: 14px; }
+  .playlist-error { color: var(--rose-deep); font-size: 12.5px; background: var(--rose-soft); padding: 8px 12px; border-radius: 10px; margin: 0; grid-column: 1 / -1; }
+  .playlist-empty { color: var(--ink-soft); font-size: 13.5px; font-style: italic; text-align: center; padding: 20px 0; }
+
+  .perfil-card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 32px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; max-width: 400px; margin: 0 auto 28px; }
+  .perfil-avatar { width: 90px; height: 90px; border-radius: 50%; overflow: hidden; margin-bottom: 4px; }
+  .perfil-avatar svg { width: 100%; height: 100%; }
+  .perfil-card h2 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; margin: 0; }
+  .perfil-card .handle { color: var(--ink-soft); font-size: 12.5px; margin: 0 0 8px; }
+  .perfil-card .perfil-bio { color: var(--ink); font-size: 13.5px; line-height: 1.55; margin: 4px 0 0; max-width: 300px; white-space: pre-wrap; }
+  .perfil-card .perfil-bio:empty { display: none; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 680px; margin: 0 auto 28px; }
+  .stat-card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; text-align: center; display: flex; flex-direction: column; gap: 5px; }
+  .stat-value { font-family: 'Fraunces', serif; font-weight: 600; font-size: 26px; }
+  .stat-label { font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+  .perfil-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .perfil-editor { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 16px; }
+
+
+  @media (max-width: 780px) {
+    .welcome-wrap h1 { font-size: 30px; }
+    .avatar-picker { grid-template-columns: repeat(2, 1fr); }
+    .app-nav { order: 3; width: 100%; justify-content: center; }
+    .rec-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .add-book-form { grid-template-columns: 1fr; }
+  }
+
+  /* ============================================================
+     CAMADA DE REFINAMENTO VISUAL — v2
+     Profundidade, textura de papel, hierarquia e microinterações.
+     ============================================================ */
+  :root {
+    --grad-rose: linear-gradient(135deg, var(--rose-deep), var(--rose-glow));
+    --grad-paper: linear-gradient(180deg, color-mix(in oklab, var(--paper) 92%, #fff), var(--paper));
+    --elev-1: 0 1px 2px rgba(43,27,34,.05), 0 8px 20px -16px var(--shadow);
+    --elev-2: 0 2px 6px -2px rgba(43,27,34,.07), 0 22px 44px -28px var(--shadow);
+    --elev-3: 0 30px 70px -40px var(--shadow), 0 4px 14px -8px rgba(43,27,34,.10);
+    --ease: cubic-bezier(.22,.9,.28,1);
+  }
+  html[data-theme="dark"] {
+    --elev-1: 0 1px 2px rgba(0,0,0,.35), 0 10px 24px -18px var(--shadow);
+    --elev-2: 0 4px 12px -6px rgba(0,0,0,.45), 0 26px 50px -30px var(--shadow);
+    --elev-3: 0 34px 80px -44px var(--shadow), 0 6px 18px -10px rgba(0,0,0,.5);
+  }
+
+  /* halo suave de fundo, dá profundidade ao papel */
+  body::before {
+    content:''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(900px 520px at 12% -8%, color-mix(in oklab, var(--rose) 12%, transparent), transparent 70%),
+      radial-gradient(760px 480px at 92% 4%, color-mix(in oklab, var(--rose-deep) 7%, transparent), transparent 72%),
+      radial-gradient(1000px 640px at 50% 108%, color-mix(in oklab, var(--ink) 5%, transparent), transparent 70%);
+    opacity: .42;
+  }
+  html[data-theme="dark"] body::before { opacity: .38; }
+
+  ::selection { background: var(--rose-deep); color: #FFF6FA; }
+  :focus-visible { outline: 2px solid var(--rose-deep); outline-offset: 2px; border-radius: 8px; }
+
+  /* barra de rolagem discreta */
+  * { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--rose-deep) 45%, transparent) transparent; }
+  *::-webkit-scrollbar { width: 9px; height: 9px; }
+  *::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--rose-deep) 38%, transparent); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+  *::-webkit-scrollbar-track { background: transparent; }
+
+  /* tipografia mais elegante */
+  h1, h2, h3, .welcome-logo, .app-logo, .stat-value, .rec-title { letter-spacing: -0.018em; }
+  .welcome-wrap h1 { font-size: clamp(32px, 5.4vw, 46px); line-height: 1.04; }
+  .welcome-wrap h1::after {
+    content:''; display:block; width: 74px; height: 3px; margin: 18px auto 0;
+    background: var(--grad-rose); border-radius: 999px; opacity: .9;
+  }
+  .welcome-lede { font-size: 16.5px; }
+  .section-head h2 { font-size: clamp(24px, 3.4vw, 30px); }
+  .section-head h2 { position: relative; padding-left: 16px; }
+  .section-head h2::before {
+    content:''; position:absolute; left:0; top: .18em; bottom: .22em; width: 4px;
+    border-radius: 999px; background: var(--grad-rose);
+  }
+
+  /* cartões: vidro leve + elevação coerente */
+  .welcome-bio-card, .rec-card, .playlist-card, .perfil-card, .stat-card, .modal-card, .user-dropdown, .app-nav, .shelf-empty {
+    background: color-mix(in oklab, var(--card) 88%, transparent);
+    backdrop-filter: blur(10px) saturate(1.05);
+    -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  }
+  .welcome-bio-card, .rec-card, .playlist-card, .stat-card { box-shadow: var(--elev-1); }
+  .perfil-card, .user-dropdown { box-shadow: var(--elev-2); }
+  .modal-card { box-shadow: var(--elev-3); border: 1px solid var(--line); }
+
+  .welcome-bio-card { position: relative; overflow: hidden; }
+  .welcome-bio-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width: 4px; background: var(--grad-rose);
+  }
+  .sobre-avatar { box-shadow: 0 6px 16px -8px var(--shadow); }
+
+  /* botões com mais presença */
+  .bookmark-btn {
+    background: var(--grad-rose);
+    box-shadow: 0 14px 28px -16px var(--shadow);
+    letter-spacing: .01em;
+    transition: filter .25s var(--ease), transform .15s var(--ease), box-shadow .25s var(--ease);
+  }
+  .bookmark-btn:hover { filter: brightness(1.06); transform: translateY(-2px); box-shadow: 0 20px 34px -16px var(--shadow); }
+  .btn { letter-spacing: .01em; }
+  .btn-primary { background: var(--grad-rose); box-shadow: 0 12px 24px -16px var(--shadow); }
+  .btn-primary:hover { filter: brightness(1.07); transform: translateY(-1px); }
+  .btn-ghost:hover { background: color-mix(in oklab, var(--rose-soft) 70%, transparent); }
+  .rec-add-btn { transition: background .2s var(--ease), color .2s var(--ease), transform .15s var(--ease); }
+  .rec-add-btn:hover { transform: translateY(-1px); }
+
+  .theme-fab { background: var(--grad-rose); box-shadow: 0 12px 26px -12px var(--shadow); }
+  .theme-fab:hover { transform: scale(1.08) rotate(-6deg); }
+
+  /* navegação */
+  .app-header { padding-top: 24px; }
+  .app-nav { box-shadow: var(--elev-1); }
+  .app-nav-item { transition: color .2s var(--ease), background .25s var(--ease); }
+  .app-nav-item:hover { color: var(--rose-deep); }
+  .app-nav-item.active { background: var(--grad-rose); box-shadow: 0 8px 18px -12px var(--shadow); }
+  .app-user { transition: background .2s var(--ease), transform .15s var(--ease); }
+  .app-user:hover { transform: translateY(-1px); }
+
+  /* campos de formulário */
+  .field input, .field textarea, .field select, .toolbar input, .comment-form textarea, .progress-input-row input {
+    transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+  }
+  .field input:focus, .field textarea:focus, .field select:focus, .toolbar input:focus, .comment-form textarea:focus, .progress-input-row input:focus {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--rose-deep) 16%, transparent);
+  }
+  .auth-tab.active { background: var(--grad-rose); }
+  .avatar-option { transition: transform .18s var(--ease), border-color .2s var(--ease), background .2s var(--ease); }
+  .avatar-option:hover { transform: translateY(-2px); }
+  .avatar-option.selected { box-shadow: 0 0 0 3px color-mix(in oklab, var(--rose-deep) 18%, transparent); }
+
+  /* estante: madeira, sombra e brilho nas lombadas */
+  .my-shelf {
+    position: relative;
+    padding: 26px 22px 18px;
+    border-bottom: none;
+    border-radius: 14px;
+    background: linear-gradient(180deg, transparent 0%, color-mix(in oklab, var(--rose-soft) 45%, transparent) 100%);
+  }
+  .my-shelf::after {
+    content:''; position: absolute; left: 0; right: 0; bottom: 0; height: 12px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, color-mix(in oklab, var(--ink) 85%, var(--plum)), var(--ink));
+    box-shadow: 0 16px 26px -18px var(--shadow);
+  }
+  .spine {
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.08), inset -6px 0 12px -8px rgba(0,0,0,.45), inset 6px 0 10px -8px rgba(255,255,255,.28), 0 10px 18px -14px rgba(0,0,0,.55);
+    transition: transform .28s var(--ease), filter .28s var(--ease);
+  }
+  .spine:hover { transform: translateY(-10px) rotate(-1.2deg); filter: brightness(1.06); z-index: 3; }
+
+  /* cards de recomendação */
+  .rec-card { transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease); }
+  .rec-card:hover { transform: translateY(-6px); box-shadow: var(--elev-2); border-color: color-mix(in oklab, var(--rose-deep) 35%, var(--line)); }
+  .book-cover { box-shadow: inset 0 -40px 60px -34px rgba(0,0,0,.55); transition: transform .35s var(--ease); }
+  .rec-card:hover .book-cover { transform: scale(1.015); }
+  .genre-tag, .filter-chip { transition: all .2s var(--ease); }
+  .filter-chip.active { box-shadow: 0 8px 18px -14px var(--shadow); }
+
+  /* modal */
+  .modal-backdrop { background: color-mix(in oklab, var(--ink) 62%, transparent); backdrop-filter: blur(6px); }
+  .modal-backdrop.open .modal-card { animation: modalIn .32s var(--ease); }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+  .modal-close:hover { background: var(--rose-soft); color: var(--rose-deep); }
+  .progress-fill { background: var(--grad-rose); box-shadow: 0 0 12px -2px color-mix(in oklab, var(--rose-deep) 55%, transparent); }
+  .status-pill.active.lido { background: var(--grad-rose); }
+
+  /* perfil e stats */
+  .perfil-avatar { box-shadow: 0 14px 30px -18px var(--shadow); }
+  .stat-card { transition: transform .22s var(--ease), box-shadow .22s var(--ease); }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--elev-2); }
+  .stat-value { background: var(--grad-rose); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* entradas suaves */
+  .screen.active { animation: fadeIn .45s var(--ease); }
+  #loadingScreen span { letter-spacing: .08em; }
+
+  @media (max-width: 780px) {
+    .app-header { padding: 18px 20px; }
+    .app-content, .wrap { padding-left: 20px; padding-right: 20px; }
+    .my-shelf { padding: 20px 14px 16px; }
+  }
+  /* ============ PALETAS DE COR ============ */
+  html[data-palette="verde"] { --paper:#F3F8F4; --paper-alt:#E7F0E9; --card:#FBFDFB; --ink:#183C26; --ink-soft:#52705D; --line:rgba(63,125,87,.18); --rose:#8FBF9F; --rose-soft:#DDEEE2; --rose-deep:#3F7D57; --rose-glow:#2F6444; --shadow:rgba(63,125,87,.22); }
+  html[data-palette="azul"]  { --paper:#F3F7FB; --paper-alt:#E5EEF7; --card:#FBFDFF; --ink:#173A59; --ink-soft:#55718A; --line:rgba(47,111,168,.18); --rose:#93B8DE; --rose-soft:#DCEAF7; --rose-deep:#2F6FA8; --rose-glow:#245A8B; --shadow:rgba(47,111,168,.22); }
+  html[data-palette="nude"]  { --paper:#FAF6F2; --paper-alt:#F1E7DF; --card:#FFFCFA; --ink:#573725; --ink-soft:#806454; --line:rgba(168,115,85,.2); --rose:#D8BBA4; --rose-soft:#F0DFD2; --rose-deep:#A87355; --rose-glow:#8C5D42; --shadow:rgba(168,115,85,.22); }
+  html[data-palette="pb"]    { --paper:#F6F6F6; --paper-alt:#E9E9E9; --card:#FFFFFF; --ink:#202020; --ink-soft:#676767; --line:rgba(0,0,0,.16); --rose:#BDBDBD; --rose-soft:#E5E5E5; --rose-deep:#2A2A2A; --rose-glow:#000000; --shadow:rgba(0,0,0,.22); }
+  html[data-palette="roxo"]  { --paper:#F8F5FC; --paper-alt:#EDE6F5; --card:#FDFBFF; --ink:#3D2459; --ink-soft:#745C8B; --line:rgba(107,63,160,.18); --rose:#B79BE0; --rose-soft:#E9DDF7; --rose-deep:#6B3FA0; --rose-glow:#55307F; --shadow:rgba(107,63,160,.22); }
+
+  html[data-theme="dark"][data-palette="verde"] { --paper:#111A14; --paper-alt:#19251D; --card:#1E2D23; --ink:#E4F3E8; --ink-soft:#A9C7B2; --line:rgba(124,211,160,.18); --rose:#9FD3AE; --rose-soft:#223B2B; --rose-deep:#7CD3A0; --rose-glow:#5BBE86; --shadow:rgba(124,211,160,.22); }
+  html[data-theme="dark"][data-palette="azul"]  { --paper:#101923; --paper-alt:#182534; --card:#1C2B3A; --ink:#E2EFFB; --ink-soft:#A9C4DC; --line:rgba(127,182,236,.18); --rose:#A9CBEC; --rose-soft:#20354A; --rose-deep:#7FB6EC; --rose-glow:#5C9CDA; --shadow:rgba(127,182,236,.22); }
+  html[data-theme="dark"][data-palette="nude"]  { --paper:#1B1512; --paper-alt:#28201B; --card:#30251F; --ink:#F4E7DD; --ink-soft:#CEB39F; --line:rgba(216,169,132,.18); --rose:#E3C7B1; --rose-soft:#3B2B22; --rose-deep:#D8A984; --rose-glow:#C08F68; --shadow:rgba(216,169,132,.22); }
+  html[data-theme="dark"][data-palette="pb"]    { --paper:#111111; --paper-alt:#1D1D1D; --card:#252525; --ink:#F2F2F2; --ink-soft:#BDBDBD; --line:rgba(255,255,255,.16); --rose:#D6D6D6; --rose-soft:#303030; --rose-deep:#F2F2F2; --rose-glow:#FFFFFF; --shadow:rgba(255,255,255,.18); }
+  html[data-theme="dark"][data-palette="roxo"]  { --paper:#17121D; --paper-alt:#221A2C; --card:#2A2036; --ink:#F0E6FA; --ink-soft:#C5AED8; --line:rgba(185,150,245,.18); --rose:#CBB2F0; --rose-soft:#372747; --rose-deep:#B996F5; --rose-glow:#A177E8; --shadow:rgba(185,150,245,.22); }
+
+  html[data-palette] { --grad-rose: linear-gradient(135deg, var(--rose), var(--rose-deep)); }
+  html[data-palette="pb"] .btn-primary, html[data-palette="pb"] .bookmark-btn { color:#fff; }
+
+  /* textos de destaque também acompanham a paleta */
+  .logo-gica, h1, h2, h3 { color: var(--rose-deep); }
+
+  /* ============ SELETOR DE PALETA ============ */
+  .palette-wrap { position: relative; }
+  .palette-btn { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--card); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform .15s var(--ease), border-color .2s var(--ease); }
+  .palette-btn:hover { transform: scale(1.06); border-color: var(--rose-deep); }
+  .palette-btn i { display: block; width: 20px; height: 20px; border-radius: 50%; background: var(--grad-rose); }
+  .palette-fab-corner { position: fixed; top: 20px; right: 76px; z-index: 90; width: 46px; height: 46px; box-shadow: 0 8px 20px -8px var(--shadow); }
+  body.app-mode .palette-fab-corner { display: none; }
+  .palette-pop { position: absolute; top: calc(100% + 10px); right: 0; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--elev-2, 0 20px 40px -20px var(--shadow)); padding: 14px; width: 232px; display: none; z-index: 120; }
+  .palette-pop.open { display: block; animation: fadeIn .2s ease; }
+  .palette-fab-corner + .palette-pop { position: fixed; top: 76px; right: 20px; }
+  .palette-pop h4 { margin: 0 0 3px; font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; }
+  .palette-pop p { margin: 0 0 12px; font-size: 11.5px; color: var(--ink-soft); line-height: 1.45; }
+  .palette-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .palette-opt { border: 1.5px solid var(--line); background: transparent; border-radius: 14px; padding: 9px 4px 7px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-family: inherit; font-size: 10px; font-weight: 700; color: var(--ink-soft); transition: all .2s var(--ease); }
+  .palette-opt:hover { transform: translateY(-2px); border-color: var(--rose-deep); }
+  .palette-opt .dot { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+  .palette-opt.selected { border-color: var(--rose-deep); color: var(--ink); background: color-mix(in oklab, var(--rose-soft) 70%, transparent); }
+
+  /* ============ AUTENTICAÇÃO ============ */
+  .auth-hint { font-size: 11.5px; color: var(--ink-soft); margin: -4px 0 0; line-height: 1.5; }
+  .auth-divider { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); font-size: 11px; font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: .05em; margin: 4px 0; }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background: var(--line); }
+  .guest-note { font-size: 11.5px; line-height: 1.5; color: var(--ink-soft); background: var(--paper-alt); border: 1px dashed var(--line); border-radius: 12px; padding: 10px 12px; margin: 0; }
+  .guest-banner { display: none; align-items: center; gap: 10px; justify-content: center; flex-wrap: wrap; background: color-mix(in oklab, var(--gold) 22%, var(--card)); border-bottom: 1px solid var(--line); padding: 9px 18px; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  body.guest-mode.app-mode .guest-banner { display: flex; }
+  .guest-banner button { border: none; background: var(--ink); color: var(--paper); font-family: inherit; font-weight: 800; font-size: 11.5px; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+
+  /* ============ CADASTRAR LIVRO ============ */
+  .add-book-form-wrap.open { max-height: 1400px; }
+  .add-book-form { grid-template-columns: 1fr; border-style: solid; border-width: 1px; border-color: var(--line); padding: 0; overflow: hidden; }
+  .add-book-head { padding: 22px 26px 18px; background: linear-gradient(135deg, color-mix(in oklab, var(--rose-soft) 85%, transparent), transparent); border-bottom: 1px solid var(--line); }
+  .add-book-head h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; margin: 0; }
+  .add-book-head p { margin: 5px 0 0; font-size: 12.5px; color: var(--ink-soft); max-width: 46ch; }
+  .add-book-body { display: grid; grid-template-columns: 1.35fr .85fr; gap: 26px; padding: 22px 26px 24px; }
+  .add-book-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-content: start; }
+  .add-book-fields .field.full { grid-column: 1 / -1; }
+  .add-book-fields .field label { display: flex; align-items: center; gap: 6px; }
+  .field-step { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; background: var(--rose-soft); color: var(--rose-deep); font-family: 'Space Mono', monospace; font-size: 9.5px; font-weight: 700; }
+  .add-book-fields input, .add-book-fields textarea, .add-book-fields select { width: 100%; }
+  .field-hint { font-size: 10.5px; color: var(--ink-soft); margin: 4px 0 0; }
+  .char-count { float: right; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--ink-soft); }
+  .add-book-preview { display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center; background: var(--paper-alt); border-radius: 18px; padding: 20px 16px; align-self: start; position: sticky; top: 18px; }
+  .add-book-preview .eyebrow { font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-soft); }
+  .preview-stage { display: flex; align-items: flex-end; gap: 12px; min-height: 168px; padding-bottom: 12px; border-bottom: 7px solid var(--ink); border-radius: 3px; width: 100%; justify-content: center; }
+  .preview-spine { width: 42px; height: 150px; border-radius: 4px 4px 2px 2px; display: flex; align-items: flex-start; justify-content: center; padding-top: 12px; font-family: 'Space Mono', monospace; font-size: 10px; color: rgba(255,255,255,.9); writing-mode: vertical-rl; box-shadow: inset -6px 0 12px -8px rgba(0,0,0,.45), inset 6px 0 10px -8px rgba(255,255,255,.28), 0 10px 18px -12px rgba(0,0,0,.55); transition: background .3s var(--ease), height .3s var(--ease); overflow: hidden; }
+  .preview-cover { width: 96px; height: 138px; border-radius: 10px; position: relative; overflow: hidden; display: flex; align-items: flex-end; padding: 9px; font-family: 'Space Mono', monospace; font-size: 9px; color: rgba(255,255,255,.92); box-shadow: 0 14px 26px -18px var(--shadow); transition: background .3s var(--ease); }
+  .preview-cover .cover-icon { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; opacity: .6; }
+  .preview-cover .cover-icon svg { width: 100%; height: 100%; }
+  .preview-info strong { display: block; font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; line-height: 1.2; }
+  .preview-info span { font-size: 11.5px; color: var(--ink-soft); }
+  .add-book-actions { padding: 0 26px 22px; }
+  @media (max-width: 860px) { .add-book-body { grid-template-columns: 1fr; } .add-book-fields { grid-template-columns: 1fr; } .add-book-preview { position: static; } }
+
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <svg viewBox="0 0 64 64">
+    <polygon points="16,18 22,3 28,18" fill="var(--rose-deep)"/>
+    <polygon points="48,18 42,3 36,18" fill="var(--rose-deep)"/>
+    <circle cx="32" cy="36" r="20" fill="var(--rose)"/>
+    <circle cx="25" cy="34" r="2.6" fill="var(--ink)"/>
+    <circle cx="39" cy="34" r="2.6" fill="var(--ink)"/>
+    <polygon points="29,40 35,40 32,44" fill="var(--rose-deep)"/>
+  </svg>
+  <span>abrindo sua estante...</span>
+</div>
+
+<button class="theme-fab theme-fab-corner theme-toggle-btn" id="themeToggleFab" aria-label="Alternar tema claro e escuro">
+  <svg class="cat-awake" viewBox="0 0 24 24" aria-label="Gatinho andando">
+    <ellipse cx="13" cy="15" rx="7" ry="4.5" fill="#fff"/>
+    <circle cx="7" cy="11" r="4.5" fill="#fff"/>
+    <polygon points="4.5,8.5 5.5,4.5 7.5,9" fill="#fff"/>
+    <polygon points="9.5,8.5 8.5,4.5 6.5,9" fill="#fff"/>
+    <path d="M17.5 13c3.5-2.5 3.5-6 1.5-8" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="10" cy="19" rx="1.4" ry="2.6" fill="#fff"/>
+    <ellipse cx="15" cy="19" rx="1.4" ry="2.2" fill="#fff"/>
+    <circle cx="5.5" cy="10.5" r="0.7" fill="var(--rose-deep)"/>
+    <polygon points="4.5,12.5 5.5,12.5 5,13.2" fill="var(--rose-deep)"/>
+  </svg>
+  <svg class="cat-asleep" viewBox="0 0 24 24" aria-label="Gatinho deitado dormindo">
+    <ellipse cx="13" cy="16" rx="7.5" ry="4" fill="#fff"/>
+    <circle cx="7" cy="13" r="4" fill="#fff"/>
+    <polygon points="5,10.5 6,7 8,11" fill="#fff"/>
+    <polygon points="9,10.5 8,7 6,11" fill="#fff"/>
+    <path d="M17 14c3.5-2 3.5-5.5 1.5-7.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <ellipse cx="10" cy="19" rx="1.3" ry="2" fill="#fff"/>
+    <ellipse cx="15" cy="19" rx="1.3" ry="2" fill="#fff"/>
+    <path d="M5 13q2.5 1.5 5 0" stroke="var(--rose-deep)" stroke-width="1" fill="none" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<div class="palette-wrap">
+  <button class="palette-btn palette-fab-corner" id="paletteFabCorner" aria-label="Escolher paleta de cores"><i></i></button>
+  <div class="palette-pop" id="palettePopCorner"></div>
+</div>
+
+<!-- TELA 1: APRESENTAÇÃO -->
+<section class="screen" id="screen-welcome">
+  <div class="welcome-wrap">
+    <div class="welcome-logo"><span class="logo-gica">Gica</span><span class="logo-books">Books</span></div>
+    <div class="welcome-mascot">
+      <svg viewBox="0 0 200 200" role="img" aria-label="Gatinha mascote do GicaBooks sentada lendo um livro">
+        <path d="M148 150c22-4 34-28 24-46-8-14-26-16-30 2" fill="none" stroke="var(--rose-deep)" stroke-width="14" stroke-linecap="round"/>
+        <ellipse cx="100" cy="142" rx="54" ry="44" fill="var(--rose)"/>
+        <polygon points="62,55 74,20 88,58" fill="var(--rose-deep)"/><polygon points="138,55 126,20 112,58" fill="var(--rose-deep)"/>
+        <polygon points="67,52 74,32 82,55" fill="var(--rose-soft)"/><polygon points="133,52 126,32 118,55" fill="var(--rose-soft)"/>
+        <circle cx="100" cy="86" r="40" fill="var(--rose)"/>
+        <circle cx="86" cy="84" r="4.5" fill="var(--ink)"/><circle cx="114" cy="84" r="4.5" fill="var(--ink)"/>
+        <circle cx="87.5" cy="82.5" r="1.4" fill="#fff"/><circle cx="115.5" cy="82.5" r="1.4" fill="#fff"/>
+        <polygon points="96,94 104,94 100,99" fill="var(--rose-deep)"/>
+        <path d="M100 99q0 4 5 5" stroke="var(--ink)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="72" cy="168" rx="14" ry="10" fill="var(--rose)"/><ellipse cx="128" cy="168" rx="14" ry="10" fill="var(--rose)"/>
+        <rect x="68" y="150" width="64" height="42" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="100" y1="150" x2="100" y2="192" stroke="var(--ink)" stroke-width="1.5"/>
+        <line x1="75" y1="160" x2="93" y2="160" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="75" y1="168" x2="90" y2="168" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="75" y1="176" x2="93" y2="176" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="107" y1="160" x2="125" y2="160" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="107" y1="168" x2="122" y2="168" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="107" y1="176" x2="125" y2="176" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1>Cada leitura merece uma estante pra chamar de sua.</h1>
+    <p class="welcome-lede">O GicaBooks é onde você guarda os livros que está lendo, marca o progresso e descobre o próximo pelas mãos de quem também lê.</p>
+    <div class="welcome-bio-card">
+      <div class="sobre-top">
+        <div class="sobre-avatar"><img src="criadora.jpg" alt="Ilustração da Gica, criadora do GicaBooks" /></div>
+        <div class="sobre-who"><strong>Gica</strong><span>criadora da plataforma</span></div>
+      </div>
+      <p>Opa, tudo bem? Eu sou a Gica, uma leitora completamente apaixonada por tudo que envolve livros, histórias e imaginação. Meu gênero preferido é romantasia e romances fofinhos, são os que eu mais leio, mas gosto de um pouco de tudo. Criei essa plataforma para que pessoas como eu possam compartilhar suas leituras, opiniões e descobrir novos livros.</p>
+    </div>
+    <button class="bookmark-btn" id="btnGoToCreateProfile">
+      <svg viewBox="0 0 16 20"><path d="M0 0h16v20l-8-6-8 6z" fill="#fff"/></svg>
+      Participar e criar minha estante
+    </button>
+    <button type="button" class="link-btn" id="btnGoToLogin">Já tem uma conta? Entrar</button>
+  </div>
+</section>
+
+<!-- TELA 2: CRIAR CONTA / ENTRAR -->
+<section class="screen" id="screen-auth">
+  <div class="auth-wrap">
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" data-tab="criar">Criar conta</button>
+      <button type="button" class="auth-tab" data-tab="entrar">Já tenho conta</button>
+    </div>
+
+    <div class="auth-panel active" id="painelCriar">
+      <div>
+        <h2>Como podemos te chamar?</h2>
+        <p>Crie sua conta pra ter uma estante só sua, salva de verdade, e voltar de qualquer lugar.</p>
+      </div>
+      <div class="field">
+        <label for="inputUsername">Nome de usuária(o)</label>
+        <input type="text" id="inputUsername" placeholder="ex: Bia" autocomplete="nickname">
+      </div>
+      <div class="field">
+        <label for="inputEmail">E-mail</label>
+        <input type="email" id="inputEmail" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="inputSenha">Senha</label>
+        <input type="password" id="inputSenha" placeholder="mínimo de 6 caracteres" autocomplete="new-password">
+        <p class="auth-hint">Sua estante fica guardada nessa conta. É só entrar com esse e-mail e senha pra encontrar tudo de novo.</p>
+      </div>
+      <div class="field">
+        <label>Escolha seu bixinho</label>
+        <div class="avatar-picker" id="avatarPicker"></div>
+        <div class="foto-upload">
+          <div class="foto-preview" id="fotoPreview" hidden></div>
+          <div class="foto-actions">
+            <button type="button" class="btn btn-ghost btn-foto" id="btnEscolherFoto">Ou use uma foto sua</button>
+            <button type="button" class="link-btn" id="btnRemoverFoto" hidden>Remover foto</button>
+          </div>
+          <input type="file" id="inputFoto" accept="image/*" hidden>
+        </div>
+      </div>
+
+      <p class="auth-error" id="criarErro" style="display:none"></p>
+      <button class="btn btn-primary" id="btnCriarEstante" disabled>Criar minha estante</button>
+      <div class="auth-divider">ou</div>
+      <button type="button" class="btn btn-ghost" id="btnConvidadoCriar">Entrar sem conta</button>
+      <p class="guest-note">No modo convidado você navega e testa o app à vontade, mas nada é salvo: ao fechar ou atualizar a página, sua estante temporária se perde.</p>
+    </div>
+
+    <div class="auth-panel" id="painelEntrar">
+      <div>
+        <h2>Que bom te ver de novo</h2>
+        <p>Entre com o e-mail e a senha da sua conta pra reencontrar sua estante.</p>
+      </div>
+      <div class="field">
+        <label for="inputLoginEmail">E-mail</label>
+        <input type="email" id="inputLoginEmail" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="inputLoginSenha">Senha</label>
+        <input type="password" id="inputLoginSenha" placeholder="sua senha" autocomplete="current-password">
+      </div>
+      <p class="auth-error" id="loginErro" style="display:none"></p>
+      <button class="btn btn-primary" id="btnEntrar">Entrar na minha estante</button>
+      <div class="auth-divider">ou</div>
+      <button type="button" class="btn btn-ghost" id="btnConvidadoEntrar">Entrar sem conta</button>
+      <p class="guest-note">Modo convidado é só pra dar uma olhada: os dados ficam nesta sessão e não são salvos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CABEÇALHO DO APP -->
+<header class="app-header" id="appHeader" style="display:none">
+  <div class="app-logo"><span class="logo-gica">Gica</span><span class="logo-books">Books</span></div>
+  <nav class="app-nav">
+    <button class="app-nav-item" data-target="screen-estante">Minha estante</button>
+    <button class="app-nav-item" data-target="screen-procurar">Procurar livro</button>
+    <button class="app-nav-item" data-target="screen-playlists">Adicionar playlist</button>
+  </nav>
+  <div class="app-header-right">
+    <div class="app-user-wrap">
+      <button class="app-user" id="appUserBubble" aria-haspopup="true" aria-expanded="false"></button>
+      <div class="user-dropdown" id="userDropdown">
+        <button type="button" class="user-dropdown-item" data-target="screen-perfil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1.4-4 4-6 7-6s5.6 2 7 6"/></svg>
+          Ver meu perfil
+        </button>
+        <button type="button" class="user-dropdown-item" id="btnNotasCriadora">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2.3 4.8 5.8 4.5c2-.2 3.8.9 4.9 2.6.9-1.7 2.7-2.8 4.7-2.6 3.5.3 5.4 3.6 3.8 7.2C19.5 16.4 12 21 12 21z"/></svg>
+          Notas da criadora
+        </button>
+      </div>
+    </div>
+    <div class="palette-wrap">
+      <button class="palette-btn" id="paletteBtnHeader" aria-label="Escolher paleta de cores"><i></i></button>
+      <div class="palette-pop" id="palettePopHeader"></div>
+    </div>
+    <button class="theme-fab theme-toggle-inline theme-toggle-btn" id="themeToggleHeader" aria-label="Alternar tema claro e escuro">
+      <svg class="cat-awake" viewBox="0 0 24 24" aria-label="Gatinho andando">
+        <ellipse cx="13" cy="15" rx="7" ry="4.5" fill="#fff"/>
+        <circle cx="7" cy="11" r="4.5" fill="#fff"/>
+        <polygon points="4.5,8.5 5.5,4.5 7.5,9" fill="#fff"/>
+        <polygon points="9.5,8.5 8.5,4.5 6.5,9" fill="#fff"/>
+        <path d="M17.5 13c3.5-2.5 3.5-6 1.5-8" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="10" cy="19" rx="1.4" ry="2.6" fill="#fff"/>
+        <ellipse cx="15" cy="19" rx="1.4" ry="2.2" fill="#fff"/>
+        <circle cx="5.5" cy="10.5" r="0.7" fill="var(--rose-deep)"/>
+        <polygon points="4.5,12.5 5.5,12.5 5,13.2" fill="var(--rose-deep)"/>
+      </svg>
+      <svg class="cat-asleep" viewBox="0 0 24 24" aria-label="Gatinho deitado dormindo">
+        <ellipse cx="13" cy="16" rx="7.5" ry="4" fill="#fff"/>
+        <circle cx="7" cy="13" r="4" fill="#fff"/>
+        <polygon points="5,10.5 6,7 8,11" fill="#fff"/>
+        <polygon points="9,10.5 8,7 6,11" fill="#fff"/>
+        <path d="M17 14c3.5-2 3.5-5.5 1.5-7.5" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="10" cy="19" rx="1.3" ry="2" fill="#fff"/>
+        <ellipse cx="15" cy="19" rx="1.3" ry="2" fill="#fff"/>
+        <path d="M5 13q2.5 1.5 5 0" stroke="var(--rose-deep)" stroke-width="1" fill="none" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</header>
+<div class="guest-banner" id="guestBanner">
+  Você está no modo convidado — seus livros somem quando fechar a página.
+  <button type="button" id="btnGuestCriarConta">Criar minha conta</button>
+</div>
+
+<!-- TELA 3: MINHA ESTANTE -->
+<section class="screen" id="screen-estante">
+  <div class="wrap app-content">
+    <div class="section-head">
+      <div>
+        <h2 id="estanteTitulo">Minha estante</h2>
+        <p>Clique num livrinho da prateleira pra ver os detalhes.</p>
+      </div>
+      <button class="btn btn-primary" data-target="screen-procurar">+ Procurar um livro</button>
+    </div>
+
+    <div class="shelf-empty" id="shelfEmpty">
+      <svg viewBox="0 0 64 64" role="img" aria-label="Gatinho deitado na estante vazia">
+        <path d="M52 42c6-1 9-7 7-11-2-4-7-4-8 1" fill="none" stroke="var(--rose-deep)" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="34" cy="44" rx="22" ry="11" fill="var(--rose)"/>
+        <circle cx="18" cy="34" r="10" fill="var(--rose)"/>
+        <polygon points="12,25 14,16 19,26" fill="var(--rose-deep)"/>
+        <polygon points="24,25 22,16 17,26" fill="var(--rose-deep)"/>
+        <polygon points="13,24 15,18 18,25" fill="var(--rose-soft)"/>
+        <polygon points="23,24 21,18 18,25" fill="var(--rose-soft)"/>
+        <path d="M14 34q3 2 6 0" stroke="var(--ink)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M20 34q3 2 6 0" stroke="var(--ink)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <polygon points="17,38 19,38 18,40" fill="var(--rose-deep)"/>
+        <ellipse cx="28" cy="51" rx="4" ry="2.5" fill="var(--rose)"/>
+        <ellipse cx="42" cy="51" rx="4" ry="2.5" fill="var(--rose)"/>
+        <ellipse cx="52" cy="47" rx="3" ry="2.5" fill="var(--rose)"/>
+        <text x="44" y="24" font-family="'Space Mono', monospace" font-size="7" fill="var(--ink-soft)">z</text>
+        <text x="49" y="18" font-family="'Space Mono', monospace" font-size="5" fill="var(--ink-soft)">z</text>
+      </svg>
+      <h3>Sua estante ainda está vazia</h3>
+      <p>Procure um livro no catálogo e adicione aqui pra começar sua leitura.</p>
+      <button class="btn btn-primary" data-target="screen-procurar">Procurar um livro</button>
+    </div>
+
+    <div class="my-shelf" id="myShelf" style="display:none"></div>
+  </div>
+</section>
+
+<!-- TELA 4: PROCURAR LIVRO -->
+<section class="screen" id="screen-procurar">
+  <div class="wrap app-content">
+    <div class="section-head">
+      <div>
+        <h2>Procurar livro</h2>
+        <p>Uma seleção com a cara da Gica, mais o que a comunidade já cadastrou.</p>
+      </div>
+    </div>
+
+    <div class="add-book-toggle-wrap">
+      <button class="btn btn-ghost" id="toggleAddBook">+ Cadastrar um livro novo</button>
+    </div>
+    <div class="add-book-form-wrap" id="addBookFormWrap">
+      <div class="add-book-form">
+        <div class="add-book-head">
+          <h3>Cadastrar um livro novo</h3>
+          <p>Preencha os detalhes e veja o livrinho ganhar forma na prateleira antes de publicar.</p>
+        </div>
+        <div class="add-book-body">
+          <div class="add-book-fields">
+            <div class="field full">
+              <label for="novoLivroTitulo"><span class="field-step">1</span> Título</label>
+              <input type="text" id="novoLivroTitulo" placeholder="Nome do livro" maxlength="90">
+            </div>
+            <div class="field">
+              <label for="novoLivroAutor"><span class="field-step">2</span> Autora(o)</label>
+              <input type="text" id="novoLivroAutor" placeholder="Quem escreveu" maxlength="70">
+            </div>
+            <div class="field">
+              <label for="novoLivroPaginas"><span class="field-step">3</span> Páginas</label>
+              <input type="number" id="novoLivroPaginas" min="1" max="5000" placeholder="ex: 320">
+            </div>
+            <div class="field full">
+              <label for="novoLivroGenero"><span class="field-step">4</span> Gênero</label>
+              <select id="novoLivroGenero">
+                <option>Romance</option><option>Romantasia</option><option>Fantasia</option><option>Comédia</option>
+                <option>Clássicos</option><option>Terror</option><option>Poesia</option><option>Ficção científica</option>
+              </select>
+              <p class="field-hint">O gênero define as cores da capa e da lombada do livrinho.</p>
+            </div>
+            <div class="field full">
+              <label for="novoLivroContexto"><span class="field-step">5</span> Contexto (sinopse) <span class="char-count" id="contextoCount">0/400</span></label>
+              <textarea id="novoLivroContexto" rows="4" maxlength="400" placeholder="Do que se trata o livro? Sem spoilers, por favor."></textarea>
+            </div>
+          </div>
+          <aside class="add-book-preview">
+            <span class="eyebrow">Prévia na estante</span>
+            <div class="preview-stage">
+              <div class="preview-spine" id="previewSpine">Seu livro</div>
+              <div class="preview-cover" id="previewCover"><div class="cover-icon" id="previewIcon"></div><span id="previewCoverAutor">Autora(o)</span></div>
+            </div>
+            <div class="preview-info">
+              <strong id="previewTitulo">Seu livro</strong>
+              <span id="previewMeta">Gênero · 0 páginas</span>
+            </div>
+          </aside>
+        </div>
+        <p class="add-book-note" style="margin:0 26px 14px">Esse livro entra no catálogo geral: qualquer pessoa vai poder ver, adicionar na própria estante e comentar.</p>
+        <div class="add-book-actions">
+          <span class="comment-saved-note" id="novoLivroSalvoNote">Livro cadastrado ✓</span>
+          <button class="btn btn-ghost" id="cancelarNovoLivro">Cancelar</button>
+          <button class="btn btn-primary" id="publicarNovoLivro">Cadastrar livro</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar"><input type="text" id="buscaInput" placeholder="Buscar por título ou autora..."></div>
+    <div class="filter-row" id="filterChips">
+      <button type="button" class="filter-chip active" data-filter="todos">Todos</button>
+      <button type="button" class="filter-chip" data-filter="Romance">Romance</button>
+      <button type="button" class="filter-chip" data-filter="Romantasia">Romantasia</button>
+      <button type="button" class="filter-chip" data-filter="Fantasia">Fantasia</button>
+      <button type="button" class="filter-chip" data-filter="Clássicos">Clássicos</button>
+      <button type="button" class="filter-chip" data-filter="Comédia">Comédia</button>
+      <button type="button" class="filter-chip" data-filter="Terror">Terror</button>
+      <button type="button" class="filter-chip" data-filter="Poesia">Poesia</button>
+      <button type="button" class="filter-chip" data-filter="Ficção científica">Ficção científica</button>
+    </div>
+    <div class="rec-grid" id="catalogoGrid"></div>
+  </div>
+</section>
+
+<!-- TELA 5: PLAYLISTS -->
+<section class="screen" id="screen-playlists">
+  <div class="wrap app-content">
+    <div class="section-head">
+      <div>
+        <h2>Playlists pra ler</h2>
+        <p>Compartilhe a trilha sonora da sua leitura e descubra a playlist de outras pessoas.</p>
+      </div>
+    </div>
+
+    <div class="playlist-card">
+      <span class="playlist-by">Indicação da Gica:</span>
+      <div class="playlist-embed-wrap" id="playlistDemoEmbed"></div>
+      <p class="playlist-comment">Feita para ouvir quando estiver lendo algo fofinho.</p>
+    </div>
+
+    <div class="add-book-toggle-wrap">
+      <button class="btn btn-ghost" id="togglePlaylistForm">+ Adicionar playlist</button>
+    </div>
+    <div class="add-book-form-wrap" id="playlistFormWrap">
+      <div class="add-book-form">
+        <div class="field full"><label for="novaPlaylistLink">Link da playlist do Spotify</label><input type="url" id="novaPlaylistLink" placeholder="https://open.spotify.com/playlist/..."></div>
+        <div class="field full"><label for="novaPlaylistComentario">Pra qual leitura você recomenda essa playlist?</label><textarea id="novaPlaylistComentario" rows="2" placeholder="Ex: perfeita pra ler romantasia à noite"></textarea></div>
+        <p class="playlist-error" id="playlistErro" style="display:none"></p>
+        <p class="add-book-note">Sua playlist entra na lista da comunidade, com seu nome e sua recomendação, visível pra qualquer pessoa.</p>
+        <div class="add-book-actions">
+          <span class="comment-saved-note" id="playlistSalvaNote">Playlist publicada ✓</span>
+          <button class="btn btn-ghost" id="cancelarPlaylist">Cancelar</button>
+          <button class="btn btn-primary" id="publicarPlaylist">Publicar playlist</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="playlist-list" id="playlistList"></div>
+  </div>
+</section>
+
+<!-- TELA 6: MEU PERFIL -->
+<section class="screen" id="screen-perfil">
+  <div class="wrap app-content">
+    <div class="perfil-card">
+      <div class="perfil-avatar" id="perfilAvatarGrande"></div>
+      <h2 id="perfilNome"></h2>
+      <p class="handle" id="perfilHandle"></p>
+      <p class="perfil-bio" id="perfilBio"></p>
+      <button type="button" class="btn btn-ghost" id="btnEditarAvatar" style="margin-top:12px">Editar perfil</button>
+    </div>
+    <div class="perfil-editor" id="perfilEditor" hidden>
+      <div class="field">
+        <label for="inputNomePerfil">Seu nome</label>
+        <input type="text" id="inputNomePerfil" maxlength="40" placeholder="Como você quer ser chamada(o)?">
+      </div>
+      <div class="field">
+        <label for="inputBioPerfil">Sobre você (opcional)</label>
+        <textarea id="inputBioPerfil" rows="3" maxlength="200" placeholder="Conte que tipo de leitura você mais ama..."></textarea>
+      </div>
+      <div class="field">
+        <label>Escolha seu bixinho</label>
+        <div class="avatar-picker" id="avatarPickerPerfil"></div>
+        <div class="foto-upload">
+          <div class="foto-preview" id="fotoPreviewPerfil" hidden></div>
+          <div class="foto-actions">
+            <button type="button" class="btn btn-ghost btn-foto" id="btnEscolherFotoPerfil">Ou use uma foto sua</button>
+            <button type="button" class="link-btn" id="btnRemoverFotoPerfil" hidden>Remover foto</button>
+          </div>
+          <input type="file" id="inputFotoPerfil" accept="image/*" hidden>
+        </div>
+      </div>
+      <div class="perfil-actions">
+        <button class="btn btn-primary" id="btnSalvarAvatar">Salvar</button>
+        <button class="btn btn-ghost" id="btnCancelarAvatar">Cancelar</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><span class="stat-value" id="statLivros">0</span><span class="stat-label">Livros na estante</span></div>
+      <div class="stat-card"><span class="stat-value" id="statPaginas">0</span><span class="stat-label">Páginas somadas</span></div>
+      <div class="stat-card"><span class="stat-value" id="statPaginasLidas">0</span><span class="stat-label">Páginas lidas</span></div>
+      <div class="stat-card"><span class="stat-value" id="statGenero" style="font-size:17px">-</span><span class="stat-label">Estilo favorito</span></div>
+    </div>
+    <div class="perfil-actions">
+      <a class="btn btn-ghost" href="gicabooks-dashboard.html" style="text-decoration:none">Ver painel visual</a>
+      <button class="btn btn-ghost" id="btnTrocarConta">Trocar de conta</button>
+    </div>
+  </div>
+</section>
+
+<!-- TELA 7: PÁGINA DO LIVRO -->
+<section class="screen" id="screen-livro">
+  <div class="wrap app-content">
+    <button class="btn btn-ghost back-btn" id="voltarDoLivro">&larr; Voltar</button>
+    <div class="modal-card book-page" id="livroPagina"></div>
+  </div>
+</section>
+
+<!-- TELA 8: PERFIL DE OUTRA PESSOA -->
+<section class="screen" id="screen-usuario">
+  <div class="wrap app-content">
+    <button class="btn btn-ghost back-btn" id="voltarDoUsuario">&larr; Voltar</button>
+    <div id="usuarioPagina"></div>
+  </div>
+</section>
+
+<div class="modal-backdrop" id="notaCriadoraBackdrop">
+  <div class="modal-card nota-card">
+    <button class="modal-close" id="notaCriadoraCloseBtn">&times;</button>
+    <div class="nota-avatar">
+      <img src="criadora.jpg" alt="Ilustração da Gica, criadora do GicaBooks" style="width:100%;height:100%;object-fit:cover;border-radius:50%;border:3px solid var(--rose);box-shadow:0 6px 18px var(--shadow);display:block;" />
+    </div>
+    <span class="nota-eyebrow">Um recado da Gica</span>
+    <p class="nota-texto">Oie, espero que você esteja curtindo o GicaBooks. Aqui a ideia é compartilhar opiniões sobre leituras, conhecer pessoas que também gostam dos mesmos livros que você, e até criar sua estante virtual e bonita! Você pode compartilhar sua playlist do Spotify com a gente também. Sei que muitos leitores também gostam de uma música para curtir o momento. Beijinhos</p>
+    <p class="nota-texto">Ainda estou fazendo mudanças no app, então algumas coisas podem mudar por aqui de vez em quando, a intenção sempre vai ser melhorar e criar um app divertido pra gente! 💕</p>
+    <span class="nota-assinatura">Com carinho, Gica 🐾</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
+<script>
+  const root = document.documentElement;
+  document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  });
+
+  const AVATARS = {
+    gato: `<svg viewBox="0 0 64 64"><polygon points="16,18 22,3 28,18" fill="var(--rose-deep)"/><polygon points="48,18 42,3 36,18" fill="var(--rose-deep)"/><polygon points="18.5,17 22,9 25.5,17" fill="var(--rose-soft)"/><polygon points="45.5,17 42,9 38.5,17" fill="var(--rose-soft)"/><circle cx="32" cy="36" r="20" fill="var(--rose)"/><circle cx="25" cy="34" r="2.6" fill="var(--ink)"/><circle cx="39" cy="34" r="2.6" fill="var(--ink)"/><polygon points="29,40 35,40 32,44" fill="var(--rose-deep)"/></svg>`,
+    coelho: `<svg viewBox="0 0 64 64"><ellipse cx="22" cy="6" rx="6" ry="16" fill="var(--rose-deep)" transform="rotate(-8 22 6)"/><ellipse cx="42" cy="6" rx="6" ry="16" fill="var(--rose-deep)" transform="rotate(8 42 6)"/><ellipse cx="22" cy="7" rx="3" ry="11" fill="var(--rose-soft)" transform="rotate(-8 22 7)"/><ellipse cx="42" cy="7" rx="3" ry="11" fill="var(--rose-soft)" transform="rotate(8 42 7)"/><circle cx="32" cy="36" r="20" fill="var(--rose)"/><circle cx="25" cy="34" r="2.6" fill="var(--ink)"/><circle cx="39" cy="34" r="2.6" fill="var(--ink)"/><polygon points="29,40 35,40 32,44" fill="var(--rose-deep)"/></svg>`,
+    cachorro: `<svg viewBox="0 0 64 64"><circle cx="32" cy="36" r="20" fill="var(--rose)"/><ellipse cx="12" cy="34" rx="7" ry="14" fill="var(--rose-deep)" transform="rotate(-12 12 34)"/><ellipse cx="52" cy="34" rx="7" ry="14" fill="var(--rose-deep)" transform="rotate(12 52 34)"/><circle cx="25" cy="34" r="2.6" fill="var(--ink)"/><circle cx="39" cy="34" r="2.6" fill="var(--ink)"/><ellipse cx="32" cy="42" rx="4" ry="3" fill="var(--rose-deep)"/></svg>`,
+    panda: `<svg viewBox="0 0 64 64"><circle cx="14" cy="18" r="8" fill="var(--ink)"/><circle cx="50" cy="18" r="8" fill="var(--ink)"/><circle cx="32" cy="36" r="20" fill="#fff"/><ellipse cx="25" cy="33" rx="5" ry="6" fill="var(--ink)"/><ellipse cx="39" cy="33" rx="5" ry="6" fill="var(--ink)"/><circle cx="25" cy="34" r="1.8" fill="#fff"/><circle cx="39" cy="34" r="1.8" fill="#fff"/><polygon points="29,40 35,40 32,44" fill="var(--rose-deep)"/></svg>`,
+    tartaruga: `<svg viewBox="0 0 64 64"><ellipse cx="32" cy="40" rx="19" ry="15" fill="var(--sage)"/><path d="M32 27 L41 33 L38 43 L26 43 L23 33 Z" fill="var(--rose-deep)" opacity=".55"/><circle cx="32" cy="18" r="12" fill="var(--rose)"/><circle cx="27" cy="17" r="2.2" fill="var(--ink)"/><circle cx="37" cy="17" r="2.2" fill="var(--ink)"/><polygon points="29,22 35,22 32,25.5" fill="var(--rose-deep)"/><ellipse cx="12" cy="42" rx="5" ry="3.4" fill="var(--rose)"/><ellipse cx="52" cy="42" rx="5" ry="3.4" fill="var(--rose)"/></svg>`,
+    polvo: `<svg viewBox="0 0 64 64"><circle cx="32" cy="26" r="18" fill="var(--rose)"/><circle cx="25" cy="24" r="2.6" fill="var(--ink)"/><circle cx="39" cy="24" r="2.6" fill="var(--ink)"/><polygon points="29,30 35,30 32,34" fill="var(--rose-deep)"/><path d="M16 34q-6 10 -2 18" stroke="var(--rose-deep)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M24 40q-4 11 0 18" stroke="var(--rose-deep)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M32 42q0 12 0 18" stroke="var(--rose-deep)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M40 40q4 11 0 18" stroke="var(--rose-deep)" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M48 34q6 10 2 18" stroke="var(--rose-deep)" stroke-width="5" fill="none" stroke-linecap="round"/></svg>`
+  };
+  const AVATAR_LABELS = { gato: 'Gatinho', coelho: 'Coelho', cachorro: 'Cachorro', panda: 'Panda', tartaruga: 'Tartaruga', polvo: 'Polvinho' };
+  function avatarHTML(key) {
+    if (typeof key === 'string' && key.startsWith('data:image')) {
+      return `<img src="${key}" alt="Foto de perfil" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;" />`;
+    }
+    return AVATARS[key] || AVATARS.gato;
+  }
+
+
+  const GENERO_COR = {
+    "Romance": "linear-gradient(160deg, #8FBF9F, #3F7D57)",
+    "Romantasia": "linear-gradient(160deg, #7A4B5E, #2B1B22)",
+    "Fantasia": "linear-gradient(160deg, #D9A566, #7A4B5E)",
+    "Comédia": "linear-gradient(160deg, #D9A566, #3F7D57)",
+    "Clássicos": "linear-gradient(160deg, #8FA88E, #2B1B22)",
+    "Terror": "linear-gradient(160deg, #2B1B22, #7A4B5E)",
+    "Poesia": "linear-gradient(160deg, #E8A9C4, #7A4B5E)",
+    "Ficção científica": "linear-gradient(160deg, #8FA88E, #3F7D57)"
+  };
+
+  const GENERO_ICONE = {
+    "Romance": `<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.1 2.3 4.8 5.8 4.5c2-.2 3.8.9 4.9 2.6.9-1.7 2.7-2.8 4.7-2.6 3.5.3 5.4 3.6 3.8 7.2C19.5 16.4 12 21 12 21z"/></svg>`,
+    "Romantasia": `<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2l1.6 5.8L19 9l-5.4 1.2L12 16l-1.6-5.8L5 9l5.4-1.2z"/><circle cx="19" cy="17" r="1.6"/><circle cx="4.5" cy="17.5" r="1.2"/></svg>`,
+    "Fantasia": `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M3 15c3-6 6-9 9-11 3 2 6 5 9 11-3 2-6-1-9-1s-6 3-9 1z"/><path d="M12 4v14"/></svg>`,
+    "Comédia": `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="10" r="1"/><circle cx="15.5" cy="10" r="1"/><path d="M7.5 14.5c1.2 1.6 3 2.5 4.5 2.5s3.3-.9 4.5-2.5"/></svg>`,
+    "Clássicos": `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M12 6c-2-1.3-4.6-1.8-7-1.4v13c2.4-.4 5 .1 7 1.4 2-1.3 4.6-1.8 7-1.4v-13c-2.4-.4-5 .1-7 1.4z"/><path d="M12 6v13"/></svg>`,
+    "Terror": `<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2C7 2 4 6 4 10.5c0 3 1.3 5 2.4 6.4L5 21l3-1.4 1.2 1.4 1.3-1.4L12 21l1.5-1.4 1.3 1.4L16 19.6 19 21l-1.4-4.1c1.1-1.4 2.4-3.4 2.4-6.4C20 6 17 2 12 2z"/><circle cx="9" cy="10.5" r="1.2" fill="#2B1B22"/><circle cx="15" cy="10.5" r="1.2" fill="#2B1B22"/></svg>`,
+    "Poesia": `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M20 4c-5 0-9 2.5-11 6.5C7.5 9 6 9 4 9.5c1 3 3.5 4.5 6.5 4.5C9 17 6 18.5 4 20c6 0 11-3 13-8 1.3-3.2 1.5-5.5 3-8z"/></svg>`,
+    "Ficção científica": `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="1.8" fill="#fff"/></svg>`
+  };
+
+  const CATALOGO = [
+    { id: 'love-hypothesis', titulo: "The Love Hypothesis", autor: "Ali Hazelwood", genero: "Romance", paginas: 384, blurb: "Uma fake dating entre cientistas que devia ser só estratégia, mas virou a química mais gostosa de se ler.", bg: GENERO_COR["Romance"] },
+    { id: 'love-theoretically', titulo: "Love, Theoretically", autor: "Ali Hazelwood", genero: "Romance", paginas: 464, blurb: "Duas rivais de laboratório, uma aposta arriscada e a prova de que oposto mesmo é o que atrai.", bg: GENERO_COR["Romance"] },
+    { id: 'verity', titulo: "Verity", autor: "Colleen Hoover", genero: "Romance", paginas: 336, blurb: "Uma escritora aceita terminar a série de uma rival desaparecida e encontra segredos que deviam ter ficado escondidos.", bg: GENERO_COR["Romance"] },
+    { id: 'e-assim-que-acaba', titulo: "É Assim que Acaba", autor: "Colleen Hoover", genero: "Romance", paginas: 384, blurb: "Uma história de amor que também encara, com cuidado, os ciclos difíceis de repetir ou de romper.", bg: GENERO_COR["Romance"] },
+    { id: 'acotar', titulo: "A Corte de Espinhos e Rosas", autor: "Sarah J. Maas", genero: "Romantasia", paginas: 448, blurb: "Uma mortal presa no mundo feérico, uma corte cheia de segredos e uma escolha que nenhum feitiço resolve.", bg: GENERO_COR["Romantasia"] },
+    { id: 'quarta-asa', titulo: "Quarta Asa", autor: "Rebecca Yarros", genero: "Romantasia", paginas: 512, blurb: "Uma escola de guerreiros dragões, rivalidades mortais e uma protagonista que não devia estar ali, mas vai sobreviver.", bg: GENERO_COR["Romantasia"] },
+    { id: 'trono-de-vidro', titulo: "Trono de Vidro", autor: "Sarah J. Maas", genero: "Fantasia", paginas: 406, blurb: "Uma assassina condenada vira campeã de um rei e descobre que sobreviver é só o primeiro capítulo.", bg: GENERO_COR["Fantasia"] },
+    { id: 'hobbit', titulo: "O Hobbit", autor: "J.R.R. Tolkien", genero: "Fantasia", paginas: 310, blurb: "Um hobbit caseiro é arrastado numa jornada com anões, um dragão e uma coragem que ele nem sabia que tinha.", bg: GENERO_COR["Fantasia"] },
+    { id: 'harry-potter-1', titulo: "Harry Potter e a Pedra Filosofal", autor: "J.K. Rowling", genero: "Fantasia", paginas: 264, blurb: "Um menino descobre, no dia do próprio aniversário, que o mundo era bem maior e mais mágico do que imaginava.", bg: GENERO_COR["Fantasia"] },
+    { id: 'hora-da-estrela', titulo: "A Hora da Estrela", autor: "Clarice Lispector", genero: "Clássicos", paginas: 96, blurb: "Uma nordestina perdida no Rio, contada com uma ternura que dói de tão bonita.", bg: GENERO_COR["Clássicos"] },
+    { id: 'paixao-gh', titulo: "A Paixão Segundo G.H.", autor: "Clarice Lispector", genero: "Clássicos", paginas: 176, blurb: "Um encontro com uma barata muda tudo o que G.H. pensava saber sobre existir.", bg: GENERO_COR["Clássicos"] },
+    { id: 'dom-casmurro', titulo: "Dom Casmurro", autor: "Machado de Assis", genero: "Clássicos", paginas: 256, blurb: "Um narrador reconstrói o próprio casamento tentando provar uma traição que talvez só exista na cabeça dele.", bg: GENERO_COR["Clássicos"] },
+    { id: 'guia-mochileiro', titulo: "O Guia do Mochileiro das Galáxias", autor: "Douglas Adams", genero: "Comédia", paginas: 224, blurb: "A Terra é destruída pra dar lugar a uma rodovia espacial, e daí a viagem só fica mais absurda.", bg: GENERO_COR["Comédia"] },
+    { id: 'dracula', titulo: "Drácula", autor: "Bram Stoker", genero: "Terror", paginas: 418, blurb: "Cartas e diários registram, aos poucos, a chegada de algo muito antigo e muito perigoso à Inglaterra.", bg: GENERO_COR["Terror"] },
+    { id: 'rosa-do-povo', titulo: "A Rosa do Povo", autor: "Carlos Drummond de Andrade", genero: "Poesia", paginas: 160, blurb: "Poemas que olham pro mundo, pro tempo e pras pequenas dores e alegrias de viver em sociedade.", bg: GENERO_COR["Poesia"] },
+    { id: 'duna', titulo: "Duna", autor: "Frank Herbert", genero: "Ficção científica", paginas: 704, blurb: "Num planeta desértico, uma família disputa o controle da substância mais valiosa do universo.", bg: GENERO_COR["Ficção científica"] },
+    { id: 'gente-comum', titulo: "Gente Comum", autor: "Colleen Hoover", genero: "Romance", paginas: 352, blurb: "Um reencontro dezesseis anos depois obriga duas pessoas a escolher entre o amor de antes e a vida de agora.", bg: GENERO_COR["Romance"] },
+    { id: 'orgulho-preconceito', titulo: "Orgulho e Preconceito", autor: "Jane Austen", genero: "Romance", paginas: 392, blurb: "Entre bailes e mal-entendidos, uma moça de opiniões fortes aprende a rever os próprios julgamentos sobre o amor.", bg: GENERO_COR["Romance"] },
+    { id: 'sete-maridos', titulo: "Os Sete Maridos de Evelyn Hugo", autor: "Taylor Jenkins Reid", genero: "Romance", paginas: 400, blurb: "Uma atriz lendária finalmente conta, casamento por casamento, os segredos que sustentaram sua fama.", bg: GENERO_COR["Romance"] },
+    { id: 'confissoes-libreira', titulo: "As Confissões de uma Livreira", autor: "Shaun Bythell", genero: "Comédia", paginas: 320, blurb: "O dono rabugento de uma livraria escocesa narra, com humor ácido, o cotidiano bizarro de vender livros usados.", bg: GENERO_COR["Comédia"] },
+    { id: 'ninguem-nasce-fantasia', titulo: "Trono de Vidro: Herdeira do Fogo", autor: "Sarah J. Maas", genero: "Romantasia", paginas: 576, blurb: "Fugindo de si mesma, uma assassina precisa reencontrar sua força numa terra de guerreiras lendárias.", bg: GENERO_COR["Romantasia"] },
+    { id: 'sombra-e-osso', titulo: "Sombra e Ossos", autor: "Leigh Bardugo", genero: "Romantasia", paginas: 368, blurb: "Uma cartógrafa descobre um poder raro capaz de rachar ao meio a escuridão que consome seu país.", bg: GENERO_COR["Romantasia"] },
+    { id: 'a-canção-de-aquiles', titulo: "A Canção de Aquiles", autor: "Madeline Miller", genero: "Fantasia", paginas: 416, blurb: "Um príncipe exilado e o maior guerreiro da Grécia constroem, à sombra da guerra de Troia, um amor que vira lenda.", bg: GENERO_COR["Fantasia"] },
+    { id: 'circe', titulo: "Circe", autor: "Madeline Miller", genero: "Fantasia", paginas: 432, blurb: "Filha desajustada de um deus do sol aprende feitiçaria no exílio e descobre um poder que ninguém esperava dela.", bg: GENERO_COR["Fantasia"] },
+    { id: 'senhor-aneis', titulo: "O Senhor dos Anéis: A Sociedade do Anel", autor: "J.R.R. Tolkien", genero: "Fantasia", paginas: 576, blurb: "Um hobbit recebe a missão impossível de destruir um anel capaz de dominar o mundo inteiro.", bg: GENERO_COR["Fantasia"] },
+    { id: 'harry-potter-2', titulo: "Harry Potter e a Câmara Secreta", autor: "J.K. Rowling", genero: "Fantasia", paginas: 296, blurb: "Vozes vindas das paredes e um mistério de décadas colocam Hogwarts inteira em alerta.", bg: GENERO_COR["Fantasia"] },
+    { id: 'memorias-postumas', titulo: "Memórias Póstumas de Brás Cubas", autor: "Machado de Assis", genero: "Clássicos", paginas: 272, blurb: "Um defunto autor narra, com ironia fina, a própria vida e as pequenas vaidades de quem já não tem nada a perder.", bg: GENERO_COR["Clássicos"] },
+    { id: 'grande-sertao', titulo: "Grande Sertão: Veredas", autor: "João Guimarães Rosa", genero: "Clássicos", paginas: 624, blurb: "Um ex-jagunço revisita, numa linguagem inventada e torrencial, os amores e pactos que marcaram sua vida no sertão.", bg: GENERO_COR["Clássicos"] },
+    { id: 'quarto-de-despejo', titulo: "Quarto de Despejo", autor: "Carolina Maria de Jesus", genero: "Clássicos", paginas: 200, blurb: "O diário de uma catadora de papel na favela do Canindé registra fome, dignidade e a força de escrever mesmo assim.", bg: GENERO_COR["Clássicos"] },
+    { id: 'iracema', titulo: "Iracema", autor: "José de Alencar", genero: "Clássicos", paginas: 128, blurb: "Uma jovem indígena e um colonizador português vivem um amor que nasce junto com as origens do Ceará.", bg: GENERO_COR["Clássicos"] },
+    { id: 'entrevista-vampiro', titulo: "Entrevista com o Vampiro", autor: "Anne Rice", genero: "Terror", paginas: 352, blurb: "Um vampiro de 200 anos conta, numa noite só, o peso de viver para sempre alimentado de sangue e culpa.", bg: GENERO_COR["Terror"] },
+    { id: 'it-a-coisa', titulo: "It: A Coisa", autor: "Stephen King", genero: "Terror", paginas: 1104, blurb: "Um grupo de amigos precisa enfrentar, décadas depois, o mesmo horror que assombrou a infância deles numa cidade pequena.", bg: GENERO_COR["Terror"] },
+    { id: 'a-assombracao-hill-house', titulo: "A Assombração da Casa da Colina", autor: "Shirley Jackson", genero: "Terror", paginas: 246, blurb: "Quatro pessoas passam uma temporada numa mansão que parece decidida a não deixar nenhuma delas ir embora inteira.", bg: GENERO_COR["Terror"] },
+    { id: 'antologia-poetica-drummond', titulo: "Antologia Poética", autor: "Carlos Drummond de Andrade", genero: "Poesia", paginas: 240, blurb: "Uma seleção dos poemas mais marcantes de Drummond, entre o afeto pelas coisas simples e a inquietação do mundo moderno.", bg: GENERO_COR["Poesia"] },
+    { id: 'meu-amor', titulo: "Meu Amor", autor: "Florbela Espanca", genero: "Poesia", paginas: 152, blurb: "Sonetos intensos sobre desejo, solidão e a busca incansável por um amor que finalmente coubesse na vida da autora.", bg: GENERO_COR["Poesia"] },
+    { id: 'o-guardador-rebanhos', titulo: "O Guardador de Rebanhos", autor: "Fernando Pessoa (Alberto Caeiro)", genero: "Poesia", paginas: 96, blurb: "Versos que celebram, com uma simplicidade quase filosófica, o simples ato de olhar e existir no mundo natural.", bg: GENERO_COR["Poesia"] },
+    { id: 'fundacao', titulo: "Fundação", autor: "Isaac Asimov", genero: "Ficção científica", paginas: 296, blurb: "Um matemático prevê a queda de um império galáctico e cria um plano de séculos para abreviar a era das trevas que vem depois.", bg: GENERO_COR["Ficção científica"] },
+    { id: 'admiravel-mundo-novo', titulo: "Admirável Mundo Novo", autor: "Aldous Huxley", genero: "Ficção científica", paginas: 312, blurb: "Numa sociedade projetada para ser perfeitamente feliz, um homem começa a desconfiar do preço dessa felicidade.", bg: GENERO_COR["Ficção científica"] },
+    { id: 'projeto-hail-mary', titulo: "Projeto Hail Mary", autor: "Andy Weir", genero: "Ficção científica", paginas: 496, blurb: "Um astronauta acorda sozinho numa nave, sem lembrar por que é a última esperança de salvar a Terra.", bg: GENERO_COR["Ficção científica"] }
+  ];
+  let catalogoComunidade = [];
+  let playlistsComunidade = [];
+  const PLAYLIST_GICA_ID = '17PEgzxyYb6PhKY8Dur1Ra';
+  function extrairPlaylistId(url) {
+    const m = url.match(/playlist[\/:]([a-zA-Z0-9]+)/);
+    return m ? m[1] : null;
+  }
+  function embedSpotify(spotifyId) {
+    return `<iframe src="https://open.spotify.com/embed/playlist/${spotifyId}?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+  }
+  function catalogoCompleto() { return CATALOGO.concat(catalogoComunidade); }
+  function encontrarLivro(id) { return catalogoCompleto().find(l => l.id === id); }
+
+  let perfil = null;
+  let estante = [];
+
+  let modoConvidado = false;
+
+  const SUPABASE_URL = 'https://c--d0cd7600-477c-488a-bc4d-3ff5bd9b4342-prod.lovable.cloud';
+  const SUPABASE_KEY = 'sb_publishable_NOQCXg5_AqlWHchNJBvnPA_ZJIiUuUk';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, storageKey: 'gicabooks-auth' },
+    global: {
+      fetch: (input, init) => {
+        const h = new Headers((init && init.headers) || undefined);
+        if (h.get('Authorization') === 'Bearer ' + SUPABASE_KEY) h.delete('Authorization');
+        h.set('apikey', SUPABASE_KEY);
+        return fetch(input, Object.assign({}, init, { headers: h }));
+      }
+    }
+  });
+
+  function linhaParaLivroEstante(r) {
+    return {
+      id: r.book_id, titulo: r.titulo, autor: r.autor, genero: r.genero, paginas: r.paginas,
+      bg: r.bg || GENERO_COR[r.genero] || GENERO_COR['Romance'], status: r.status,
+      paginaAtual: r.pagina_atual,
+      iniciadoEm: r.iniciado_em ? Date.parse(r.iniciado_em) : null,
+      finalizadoEm: r.terminado_em ? Date.parse(r.terminado_em) : null
+    };
+  }
+
+  async function salvarContaAtual() {
+    if (!perfil || modoConvidado || !perfil.id) return true;
+    try {
+      if (estante.length) {
+        // Grava/atualiza os livros atuais ANTES de apagar qualquer coisa, para nunca
+        // deixar a estante do usuário vazia caso uma das duas etapas falhe no meio do caminho.
+        const rows = estante.map(l => ({
+          user_id: perfil.id, book_id: l.id, titulo: l.titulo, autor: l.autor || '',
+          genero: l.genero || 'Romance', paginas: l.paginas || 0, bg: l.bg || null,
+          status: l.status || 'quero', pagina_atual: l.paginaAtual || 0,
+          iniciado_em: l.iniciadoEm ? new Date(l.iniciadoEm).toISOString() : null,
+          terminado_em: l.finalizadoEm ? new Date(l.finalizadoEm).toISOString() : null
+        }));
+        const { error: upsertErro } = await sb.from('shelf_items')
+          .upsert(rows, { onConflict: 'user_id,book_id' });
+        if (upsertErro) throw upsertErro;
+
+        const idsAtuais = estante.map(l => `"${l.id}"`).join(',');
+        const { error: delErro } = await sb.from('shelf_items').delete()
+          .eq('user_id', perfil.id).not('book_id', 'in', `(${idsAtuais})`);
+        if (delErro) throw delErro;
+      } else {
+        const { error: delErro } = await sb.from('shelf_items').delete().eq('user_id', perfil.id);
+        if (delErro) throw delErro;
+      }
+      return true;
+    } catch (e) { console.error('Erro ao salvar estante', e); return false; }
+  }
+
+  async function carregarEstante() {
+    if (!perfil || modoConvidado || !perfil.id) return;
+    const { data, error } = await sb.from('shelf_items').select('*').eq('user_id', perfil.id);
+    if (error) { console.error(error); return; }
+    estante = (data || []).map(linhaParaLivroEstante);
+  }
+
+  async function carregarComunidade() {
+    const [livrosRes, playlistsRes] = await Promise.all([
+      sb.from('community_books').select('*').order('created_at', { ascending: true }),
+      sb.from('community_playlists').select('*').order('created_at', { ascending: true })
+    ]);
+    catalogoComunidade = (livrosRes.data || []).map(r => ({
+      id: r.id, titulo: r.titulo, autor: r.autor, genero: r.genero, paginas: r.paginas,
+      blurb: r.blurb, bg: r.bg || GENERO_COR[r.genero] || GENERO_COR['Romance'],
+      adicionadoPor: r.adicionado_por || 'Alguém', adicionadoEm: Date.parse(r.created_at)
+    }));
+    playlistsComunidade = (playlistsRes.data || []).map(r => ({
+      id: r.id, spotifyId: r.spotify_id, comentario: r.comentario,
+      adicionadoPor: r.adicionado_por || 'Alguém', adicionadoEm: Date.parse(r.created_at)
+    }));
+  }
+
+  async function carregarPerfilDoUsuario(user) {
+    const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    const meta = user.user_metadata || {};
+    perfil = {
+      id: user.id,
+      nome: (data && data.nome) || meta.nome || (user.email || 'Leitora').split('@')[0],
+      email: user.email || (data && data.email) || '',
+      avatar: (data && data.avatar) || meta.avatar || 'gato',
+      bio: (data && data.bio) || '',
+      tema: (data && data.tema) || 'verde',
+      modo: (data && data.modo) || 'light'
+    };
+    modoConvidado = false;
+    document.body.classList.remove('guest-mode');
+    aplicarPaleta(perfil.tema, false);
+    root.setAttribute('data-theme', perfil.modo === 'dark' ? 'dark' : 'light');
+  }
+
+  async function salvarPreferencias() {
+    if (!perfil || modoConvidado || !perfil.id) return;
+    await sb.from('profiles').update({
+      nome: perfil.nome, avatar: perfil.avatar, bio: perfil.bio || '', tema: perfil.tema, modo: perfil.modo
+    }).eq('id', perfil.id);
+  }
+
+  function showScreen(id) {
+    const atual = document.querySelector('.screen.active');
+    if (atual && atual.id !== id && typeof TELAS_NAVEGAVEIS !== 'undefined' && TELAS_NAVEGAVEIS.includes(atual.id)) telaAnterior = atual.id;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+    const appScreens = ['screen-estante', 'screen-procurar', 'screen-playlists', 'screen-perfil', 'screen-livro', 'screen-usuario'];
+    const emModoApp = appScreens.includes(id);
+    document.getElementById('appHeader').style.display = emModoApp ? 'flex' : 'none';
+    document.body.classList.toggle('app-mode', emModoApp);
+    document.querySelectorAll('.app-nav-item').forEach(b => b.classList.toggle('active', b.dataset.target === id));
+    if (id === 'screen-procurar') renderCatalogo();
+    if (id === 'screen-playlists') renderPlaylists();
+    if (id === 'screen-perfil') renderPerfilStats();
+  }
+  document.body.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-target]');
+    if (t && t.dataset.target && t.dataset.target.startsWith('screen-')) { showScreen(t.dataset.target); fecharUserDropdown(); }
+  });
+
+  const userDropdown = document.getElementById('userDropdown');
+  const appUserBubble = document.getElementById('appUserBubble');
+  function fecharUserDropdown() {
+    userDropdown.classList.remove('open');
+    appUserBubble.setAttribute('aria-expanded', 'false');
+  }
+  appUserBubble.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const abrindo = !userDropdown.classList.contains('open');
+    userDropdown.classList.toggle('open', abrindo);
+    appUserBubble.setAttribute('aria-expanded', String(abrindo));
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.app-user-wrap')) fecharUserDropdown();
+  });
+
+  const notaCriadoraBackdrop = document.getElementById('notaCriadoraBackdrop');
+  document.getElementById('btnNotasCriadora').addEventListener('click', () => {
+    fecharUserDropdown();
+    notaCriadoraBackdrop.classList.add('open');
+  });
+  document.getElementById('notaCriadoraCloseBtn').addEventListener('click', () => notaCriadoraBackdrop.classList.remove('open'));
+  notaCriadoraBackdrop.addEventListener('click', (e) => { if (e.target === notaCriadoraBackdrop) notaCriadoraBackdrop.classList.remove('open'); });
+
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('painelCriar').classList.toggle('active', tab.dataset.tab === 'criar');
+      document.getElementById('painelEntrar').classList.toggle('active', tab.dataset.tab === 'entrar');
+    });
+  });
+  document.getElementById('btnGoToCreateProfile').addEventListener('click', () => showScreen('screen-auth'));
+  document.getElementById('btnGoToLogin').addEventListener('click', () => {
+    showScreen('screen-auth');
+    document.querySelector('.auth-tab[data-tab="entrar"]').click();
+  });
+
+  const avatarPicker = document.getElementById('avatarPicker');
+  let avatarEscolhido = null;
+  Object.keys(AVATARS).forEach(key => {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'avatar-option'; btn.dataset.avatar = key;
+    btn.innerHTML = AVATARS[key] + `<span>${AVATAR_LABELS[key]}</span>`;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected'); avatarEscolhido = key;
+      const fp = document.getElementById('fotoPreview');
+      if (fp) { fp.hidden = true; fp.innerHTML = ''; document.getElementById('inputFoto').value = ''; document.getElementById('btnRemoverFoto').hidden = true; document.getElementById('btnEscolherFoto').textContent = 'Ou use uma foto sua'; }
+      checarFormPerfil();
+    });
+    avatarPicker.appendChild(btn);
+  });
+
+  const inputFoto = document.getElementById('inputFoto');
+  const fotoPreview = document.getElementById('fotoPreview');
+  const btnEscolherFoto = document.getElementById('btnEscolherFoto');
+  const btnRemoverFoto = document.getElementById('btnRemoverFoto');
+  btnEscolherFoto.addEventListener('click', () => inputFoto.click());
+  btnRemoverFoto.addEventListener('click', () => {
+    inputFoto.value = ''; fotoPreview.hidden = true; fotoPreview.innerHTML = '';
+    btnRemoverFoto.hidden = true; btnEscolherFoto.textContent = 'Ou use uma foto sua';
+    if (typeof avatarEscolhido === 'string' && avatarEscolhido.startsWith('data:')) avatarEscolhido = null;
+    checarFormPerfil();
+  });
+  inputFoto.addEventListener('change', () => {
+    const file = inputFoto.files && inputFoto.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const size = 192;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        const min = Math.min(img.width, img.height);
+        ctx.drawImage(img, (img.width - min) / 2, (img.height - min) / 2, min, min, 0, 0, size, size);
+        avatarEscolhido = canvas.toDataURL('image/jpeg', 0.82);
+        document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+        fotoPreview.hidden = false;
+        fotoPreview.innerHTML = `<img src="${avatarEscolhido}" alt="Prévia da sua foto de perfil" />`;
+        btnRemoverFoto.hidden = false;
+        btnEscolherFoto.textContent = 'Trocar foto';
+        checarFormPerfil();
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const inputUsername = document.getElementById('inputUsername');
+  const inputEmail = document.getElementById('inputEmail');
+  const inputSenha = document.getElementById('inputSenha');
+  const btnCriarEstante = document.getElementById('btnCriarEstante');
+  function checarFormPerfil() {
+    btnCriarEstante.disabled = !(inputUsername.value.trim() && inputEmail.value.trim().includes('@') && inputSenha.value.length >= 6 && avatarEscolhido);
+  }
+  inputUsername.addEventListener('input', checarFormPerfil);
+  inputEmail.addEventListener('input', checarFormPerfil);
+  inputSenha.addEventListener('input', checarFormPerfil);
+
+  function mostrarErro(el, msg) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+
+  async function entrarNoApp() {
+    await carregarEstante();
+    renderHeaderUser(); renderPerfilStats(); renderEstante();
+    showScreen('screen-estante');
+  }
+
+  btnCriarEstante.addEventListener('click', async () => {
+    const criarErro = document.getElementById('criarErro');
+    mostrarErro(criarErro, '');
+    btnCriarEstante.disabled = true;
+    const nome = inputUsername.value.trim();
+    const email = inputEmail.value.trim().toLowerCase();
+    const { data, error } = await sb.auth.signUp({
+      email, password: inputSenha.value,
+      options: { data: { nome, avatar: avatarEscolhido }, emailRedirectTo: window.location.origin }
+    });
+    if (error) {
+      mostrarErro(criarErro, /already/i.test(error.message) ? 'Esse e-mail já tem conta. Use a aba "Já tenho conta".' : error.message);
+      checarFormPerfil();
+      return;
+    }
+    if (!data.session) {
+      mostrarErro(criarErro, 'Conta criada! Confirme seu e-mail e depois entre pela aba "Já tenho conta".');
+      checarFormPerfil();
+      return;
+    }
+    await carregarPerfilDoUsuario(data.session.user);
+    estante = [];
+    await salvarPreferencias();
+    checarFormPerfil();
+    await entrarNoApp();
+  });
+
+  document.getElementById('btnEntrar').addEventListener('click', async () => {
+    const btn = document.getElementById('btnEntrar');
+    const email = document.getElementById('inputLoginEmail').value.trim().toLowerCase();
+    const senha = document.getElementById('inputLoginSenha').value;
+    const loginErro = document.getElementById('loginErro');
+    if (!email.includes('@')) { mostrarErro(loginErro, 'Digite um e-mail válido.'); return; }
+    if (!senha) { mostrarErro(loginErro, 'Digite sua senha.'); return; }
+    mostrarErro(loginErro, '');
+    btn.disabled = true;
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: senha });
+    btn.disabled = false;
+    if (error) { mostrarErro(loginErro, 'E-mail ou senha incorretos. Tente de novo.'); return; }
+    await carregarPerfilDoUsuario(data.user);
+    await entrarNoApp();
+  });
+
+  function entrarComoConvidado() {
+    modoConvidado = true;
+    perfil = { id: null, nome: 'Visitante', email: 'modo convidado', avatar: avatarEscolhido || 'gato', bio: '', tema: paletaAtual, modo: root.getAttribute('data-theme') || 'light' };
+    estante = [];
+    document.body.classList.add('guest-mode');
+    renderHeaderUser(); renderPerfilStats(); renderEstante();
+    showScreen('screen-estante');
+  }
+  document.getElementById('btnConvidadoCriar').addEventListener('click', entrarComoConvidado);
+  document.getElementById('btnConvidadoEntrar').addEventListener('click', entrarComoConvidado);
+  document.getElementById('btnGuestCriarConta').addEventListener('click', () => {
+    modoConvidado = false; perfil = null; estante = [];
+    document.body.classList.remove('guest-mode');
+    showScreen('screen-auth');
+    document.querySelector('.auth-tab[data-tab="criar"]').click();
+  });
+
+  function renderHeaderUser() {
+    if (!perfil) return;
+    document.getElementById('appUserBubble').innerHTML = `<div class="app-user-avatar">${avatarHTML(perfil.avatar)}</div><span class="app-user-name">${escaparHtml(perfil.nome)}</span>`;
+    document.getElementById('estanteTitulo').textContent = `Estante de ${perfil.nome}`;
+  }
+
+  const myShelf = document.getElementById('myShelf');
+  const shelfEmpty = document.getElementById('shelfEmpty');
+  const ESTADOS = [ { key: 'quero', label: 'Quero ler' }, { key: 'lendo', label: 'Lendo' }, { key: 'lido', label: 'Lido' } ];
+  let ultimoAdicionadoId = null;
+
+  function renderEstante() {
+    myShelf.innerHTML = '';
+    if (estante.length === 0) {
+      shelfEmpty.style.display = 'flex'; myShelf.style.display = 'none';
+      return;
+    }
+    shelfEmpty.style.display = 'none'; myShelf.style.display = 'flex';
+
+    estante.forEach((livro, i) => {
+      const spine = document.createElement('div');
+      const largura = 26 + (i % 4) * 6;
+      const altura = 58 + Math.min(38, Math.round((livro.paginas || 200) / 20));
+      spine.style.width = largura + 'px';
+      spine.style.height = altura + '%';
+      spine.style.background = livro.bg;
+      spine.className = 'spine' + (livro.id === ultimoAdicionadoId ? ' spine-new' : '') + (livro.status === 'lido' ? ' spine-lido' : '');
+      let badge = '';
+      if (livro.status === 'lido') badge = '<span class="spine-seal" title="Livro concluído"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span>';
+      else if (livro.status === 'lendo') badge = '<span class="spine-badge lendo">&#8226;</span>';
+      spine.innerHTML = badge + escaparHtml(livro.titulo);
+      spine.title = livro.titulo + ' - ' + livro.autor;
+      spine.addEventListener('click', () => abrirModalLivro(livro.id));
+      myShelf.appendChild(spine);
+    });
+    ultimoAdicionadoId = null;
+  }
+
+  const bookModalCard = document.getElementById('livroPagina');
+  var telaAnterior = 'screen-estante';
+  var TELAS_NAVEGAVEIS = ['screen-estante', 'screen-procurar', 'screen-playlists', 'screen-perfil', 'screen-livro', 'screen-usuario'];
+  document.getElementById('voltarDoLivro').addEventListener('click', () => showScreen(telaAnterior === 'screen-livro' ? 'screen-estante' : telaAnterior));
+  document.getElementById('voltarDoUsuario').addEventListener('click', () => showScreen(telaAnterior === 'screen-usuario' ? 'screen-estante' : telaAnterior));
+
+  function diasEntre(a, b) { return Math.max(0, Math.round((b - a) / 86400000)); }
+
+  function tempoLendoTexto(item) {
+    if (!item) return '';
+    if (item.status === 'quero' && !item.iniciadoEm) return 'Ainda não começou a ler.';
+    if (item.status === 'lido' && item.finalizadoEm) {
+      const dias = diasEntre(item.iniciadoEm || item.finalizadoEm, item.finalizadoEm);
+      return dias > 0 ? `Concluído após ${dias} dia(s) de leitura.` : 'Concluído.';
+    }
+    if (item.iniciadoEm) {
+      const dias = diasEntre(item.iniciadoEm, Date.now());
+      return dias > 0 ? `Lendo há ${dias} dia(s).` : 'Começou a ler hoje.';
+    }
+    return '';
+  }
+
+  function abrirModalLivro(bookId) {
+    const livroBase = encontrarLivro(bookId);
+    if (!livroBase) return;
+    const itemEstante = estante.find(l => l.id === bookId);
+
+    const terminadoModal = itemEstante && itemEstante.status === 'lido';
+    let corpo = `
+      
+      <div class="modal-cover ${terminadoModal ? 'is-lido' : ''}" style="background:${livroBase.bg}">
+        ${terminadoModal ? '<div class="cover-done-ribbon">Concluído</div>' : ''}
+        <div class="cover-icon">${GENERO_ICONE[livroBase.genero] || ''}</div>
+      </div>
+      <h3>${escaparHtml(livroBase.titulo)}</h3>
+      <p class="modal-author">${escaparHtml(livroBase.autor)}</p>
+      <div class="modal-meta">
+        <span class="genre-tag">${escaparHtml(livroBase.genero)}</span>
+        <span class="genre-tag" style="background:var(--paper-alt);color:var(--ink-soft)">${livroBase.paginas} páginas</span>
+      </div>
+      ${livroBase.adicionadoPor ? `<p class="rec-added-by" style="margin-bottom:10px">Cadastrado por ${escaparHtml(livroBase.adicionadoPor)}</p>` : ''}
+      <p class="modal-blurb">${escaparHtml(livroBase.blurb)}</p>
+    `;
+
+    if (itemEstante) {
+      const pct = Math.min(100, Math.round(((itemEstante.paginaAtual || 0) / livroBase.paginas) * 100));
+      corpo += `
+        <span class="modal-label">Status na sua estante</span>
+        <div class="status-row" id="modalStatusRow"></div>
+        <span class="modal-label">Cálculo de páginas</span>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-nums"><span>${itemEstante.paginaAtual || 0} / ${livroBase.paginas} páginas</span><span>${pct}%</span></div>
+        <div class="progress-input-row">
+          <input type="number" id="paginaAtualInput" min="0" max="${livroBase.paginas}" value="${itemEstante.paginaAtual || 0}">
+          <button class="btn btn-ghost" id="salvarPaginaBtn">Atualizar página</button>
+        </div>
+        <p class="reading-time-note">${tempoLendoTexto(itemEstante)}</p>
+        <button class="modal-remove" id="modalRemoveBtn">Remover da estante</button>
+      `;
+    } else {
+      corpo += `
+        <div class="modal-add-prompt">
+          <p>Adicione esse livro à sua estante pra acompanhar seu progresso de páginas e tempo de leitura.</p>
+          <button class="btn btn-primary" id="modalAddBtn">+ Adicionar à estante</button>
+        </div>
+      `;
+    }
+
+    corpo += `
+      <div class="comments-head">
+        <span class="modal-label" style="margin-bottom:0" id="comentariosLabel">Comentários</span>
+        <span class="comments-sub">Salvos e visíveis pra toda a comunidade</span>
+      </div>
+      <div class="comments-list" id="comentariosLista"><p class="comments-loading">Carregando comentários...</p></div>
+      ${perfil ? `
+      <div class="comment-form">
+        <textarea id="comentarioTexto" rows="2" placeholder="Escreva um comentário sobre esse livro..." maxlength="500"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <span class="comment-saved-note" id="comentarioSalvoNote">Comentário salvo ✓</span>
+          <button class="btn btn-primary" id="btnEnviarComentario">Comentar</button>
+        </div>
+      </div>
+      ` : `<p class="comment-login-hint">Crie sua estante ou entre com seu e-mail pra poder comentar.</p>`}
+    `;
+
+    bookModalCard.innerHTML = corpo;
+    bookModalCard.dataset.bookId = bookId;
+
+    
+
+    if (itemEstante) {
+      const row = bookModalCard.querySelector('#modalStatusRow');
+      ESTADOS.forEach(estado => {
+        const pill = document.createElement('button');
+        pill.className = 'status-pill' + (itemEstante.status === estado.key ? ' active' + (estado.key === 'lido' ? ' lido' : '') : '');
+        pill.innerHTML = `<span class="check-dot"></span>${estado.label}`;
+        pill.addEventListener('click', async () => {
+          if (estado.key === 'lendo' && !itemEstante.iniciadoEm) itemEstante.iniciadoEm = Date.now();
+          if (estado.key === 'lido') {
+            if (!itemEstante.iniciadoEm) itemEstante.iniciadoEm = Date.now();
+            itemEstante.finalizadoEm = Date.now();
+            itemEstante.paginaAtual = livroBase.paginas;
+          }
+          itemEstante.status = estado.key;
+          await salvarContaAtual();
+          renderEstante();
+          abrirModalLivro(bookId);
+        });
+        row.appendChild(pill);
+      });
+
+      bookModalCard.querySelector('#salvarPaginaBtn').addEventListener('click', async () => {
+        const val = parseInt(bookModalCard.querySelector('#paginaAtualInput').value, 10) || 0;
+        itemEstante.paginaAtual = Math.max(0, Math.min(livroBase.paginas, val));
+        if (itemEstante.paginaAtual > 0 && !itemEstante.iniciadoEm) itemEstante.iniciadoEm = Date.now();
+        if (itemEstante.paginaAtual >= livroBase.paginas) { itemEstante.status = 'lido'; itemEstante.finalizadoEm = Date.now(); }
+        await salvarContaAtual();
+        renderEstante();
+        abrirModalLivro(bookId);
+      });
+
+      bookModalCard.querySelector('#modalRemoveBtn').addEventListener('click', async () => {
+        estante = estante.filter(l => l.id !== bookId);
+        await salvarContaAtual();
+        renderEstante();
+        fecharModalLivro();
+      });
+    } else {
+      bookModalCard.querySelector('#modalAddBtn').addEventListener('click', async () => {
+        adicionarLivroNaEstante(livroBase);
+        await salvarContaAtual();
+        renderEstante();
+        abrirModalLivro(bookId);
+        renderCatalogo();
+      });
+    }
+
+    const btnComentar = bookModalCard.querySelector('#btnEnviarComentario');
+    if (btnComentar) {
+      btnComentar.addEventListener('click', () => enviarComentario(bookId));
+      bookModalCard.querySelector('#comentarioTexto').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); enviarComentario(bookId); }
+      });
+    }
+
+    showScreen('screen-livro');
+    carregarComentarios(bookId);
+  }
+  function fecharModalLivro() { showScreen(telaAnterior === 'screen-livro' ? 'screen-estante' : telaAnterior); }
+
+  function adicionarLivroNaEstante(livroBase) {
+    if (estante.some(l => l.id === livroBase.id)) return;
+    estante.push({ id: livroBase.id, titulo: livroBase.titulo, autor: livroBase.autor, genero: livroBase.genero, paginas: livroBase.paginas, bg: livroBase.bg, status: 'quero', paginaAtual: 0 });
+    ultimoAdicionadoId = livroBase.id;
+  }
+
+  async function carregarComentarios(bookId) {
+    const { data } = await sb.from('book_comments').select('*').eq('book_id', bookId).order('created_at', { ascending: true });
+    if (bookModalCard.dataset.bookId !== bookId) return;
+    const linhas = data || [];
+    let curtidas = [];
+    if (linhas.length) {
+      const res = await sb.from('comment_likes').select('comment_id, user_id').in('comment_id', linhas.map(c => c.id));
+      curtidas = res.data || [];
+    }
+    if (bookModalCard.dataset.bookId !== bookId) return;
+    const comentarios = linhas.map(c => ({
+      id: c.id, parentId: c.parent_id || null, userId: c.user_id,
+      nome: c.nome, avatar: c.avatar, texto: c.texto, data: Date.parse(c.created_at),
+      curtidas: curtidas.filter(k => k.comment_id === c.id).length,
+      euCurti: !!(perfil && !modoConvidado && curtidas.some(k => k.comment_id === c.id && k.user_id === perfil.id))
+    }));
+    renderListaComentarios(bookId, comentarios);
+  }
+  function escaparHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+  function comentarioHTML(c, respostas) {
+    return `
+      <div class="comment-item" data-comment-id="${c.id}">
+        <div class="comment-row">
+          <div class="comment-avatar">${avatarHTML(c.avatar)}</div>
+          <div class="comment-body" style="flex:1">
+            <button type="button" class="who" data-user-id="${c.userId}">${escaparHtml(c.nome)}</button>
+            <div class="txt">${escaparHtml(c.texto)}</div>
+            <div class="when">${new Date(c.data).toLocaleDateString('pt-BR')}</div>
+            <div class="comment-actions">
+              <button type="button" class="comment-action like-btn${c.euCurti ? ' liked' : ''}" data-comment-id="${c.id}">${c.euCurti ? '❤' : '♡'} <span>${c.curtidas || ''}</span></button>
+              <button type="button" class="comment-action reply-btn" data-comment-id="${c.id}">Responder</button>
+            </div>
+          </div>
+        </div>
+        ${respostas.length ? `<div class="comment-replies">${respostas.map(r => comentarioHTML(r, [])).join('')}</div>` : ''}
+      </div>
+    `;
+  }
+  function renderListaComentarios(bookId, comentarios) {
+    if (bookModalCard.dataset.bookId !== bookId) return;
+    const lista = bookModalCard.querySelector('#comentariosLista');
+    const label = bookModalCard.querySelector('#comentariosLabel');
+    if (label) label.textContent = `Comentários${comentarios.length ? ' (' + comentarios.length + ')' : ''}`;
+    if (!lista) return;
+    if (comentarios.length === 0) {
+      lista.innerHTML = '<p class="comments-empty">Seja a primeira pessoa a comentar sobre esse livro.</p>';
+      return;
+    }
+    const raizes = comentarios.filter(c => !c.parentId).reverse();
+    lista.innerHTML = raizes.map(c => comentarioHTML(c, comentarios.filter(r => r.parentId === c.id))).join('');
+
+    lista.querySelectorAll('.who').forEach(btn => {
+      btn.addEventListener('click', () => abrirPerfilPublico(btn.dataset.userId));
+    });
+    lista.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => alternarCurtida(bookId, btn.dataset.commentId));
+    });
+    lista.querySelectorAll('.reply-btn').forEach(btn => {
+      btn.addEventListener('click', () => abrirFormResposta(bookId, btn.dataset.commentId, btn.closest('.comment-item')));
+    });
+  }
+
+  async function alternarCurtida(bookId, commentId) {
+    if (!perfil || modoConvidado) { alert('Crie sua conta pra curtir comentários.'); return; }
+    const { data } = await sb.from('comment_likes').select('id').eq('comment_id', commentId).eq('user_id', perfil.id).maybeSingle();
+    if (data) await sb.from('comment_likes').delete().eq('id', data.id);
+    else await sb.from('comment_likes').insert({ comment_id: commentId, user_id: perfil.id });
+    await carregarComentarios(bookId);
+  }
+
+  function abrirFormResposta(bookId, commentId, item) {
+    if (!perfil || modoConvidado) { alert('Crie sua conta pra responder comentários.'); return; }
+    const existente = item.querySelector(':scope > .reply-form');
+    if (existente) { existente.remove(); return; }
+    const form = document.createElement('div');
+    form.className = 'reply-form';
+    form.innerHTML = `<textarea rows="2" maxlength="500" placeholder="Escreva sua resposta..."></textarea><button type="button" class="btn btn-primary">Responder</button>`;
+    item.appendChild(form);
+    const textarea = form.querySelector('textarea');
+    textarea.focus();
+    form.querySelector('button').addEventListener('click', async () => {
+      const texto = textarea.value.trim();
+      if (!texto) return;
+      await inserirComentario(bookId, texto, commentId);
+    });
+  }
+
+  async function inserirComentario(bookId, texto, parentId) {
+    const { error } = await sb.from('book_comments').insert({
+      book_id: bookId, user_id: perfil.id, nome: perfil.nome, avatar: perfil.avatar, texto,
+      parent_id: parentId || null
+    });
+    if (error) { console.error(error); alert('Não consegui salvar seu comentário agora.'); return false; }
+    await carregarComentarios(bookId);
+    return true;
+  }
+
+  async function enviarComentario(bookId) {
+    const textarea = bookModalCard.querySelector('#comentarioTexto');
+    const texto = textarea.value.trim();
+    if (!texto || !perfil) return;
+    if (modoConvidado) { alert('No modo convidado não dá pra comentar. Crie sua conta pra participar!'); return; }
+    const ok = await inserirComentario(bookId, texto, null);
+    if (!ok) return;
+    textarea.value = '';
+    const nota = bookModalCard.querySelector('#comentarioSalvoNote');
+    if (nota) {
+      nota.classList.add('show');
+      setTimeout(() => nota.classList.remove('show'), 2200);
+    }
+  }
+
+  /* ======= Perfil público de outra pessoa ======= */
+  const usuarioPagina = document.getElementById('usuarioPagina');
+  async function abrirPerfilPublico(userId) {
+    if (!userId) return;
+    if (perfil && userId === perfil.id) { showScreen('screen-perfil'); return; }
+    usuarioPagina.innerHTML = '<p class="public-shelf-note">Carregando perfil...</p>';
+    showScreen('screen-usuario');
+    const [perfilRes, estanteRes] = await Promise.all([
+      sb.rpc('perfil_publico', { _user_id: userId }),
+      sb.from('shelf_items').select('*').eq('user_id', userId)
+    ]);
+    const dados = (perfilRes.data && perfilRes.data[0]) || { nome: 'Leitora', avatar: 'gato' };
+    const livros = (estanteRes.data || []).map(linhaParaLivroEstante);
+    const totalPaginas = livros.reduce((s, l) => s + (l.paginas || 0), 0);
+    const lidas = livros.reduce((s, l) => s + Math.min(l.paginaAtual || 0, l.paginas || 0), 0);
+    let generoFav = '-';
+    if (livros.length) {
+      const contagem = {};
+      livros.forEach(l => { contagem[l.genero] = (contagem[l.genero] || 0) + 1; });
+      generoFav = Object.keys(contagem).reduce((a, b) => contagem[a] >= contagem[b] ? a : b);
+    }
+    usuarioPagina.innerHTML = `
+      <div class="perfil-card">
+        <div class="perfil-avatar">${avatarHTML(dados.avatar)}</div>
+        <h2>${escaparHtml(dados.nome)}</h2>
+        <p class="handle">Perfil de leitura da comunidade</p>
+        ${dados.bio ? `<p class="perfil-bio">${escaparHtml(dados.bio)}</p>` : ''}
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><span class="stat-value">${livros.length}</span><span class="stat-label">Livros na estante</span></div>
+        <div class="stat-card"><span class="stat-value">${totalPaginas.toLocaleString('pt-BR')}</span><span class="stat-label">Páginas somadas</span></div>
+        <div class="stat-card"><span class="stat-value">${lidas.toLocaleString('pt-BR')}</span><span class="stat-label">Páginas lidas</span></div>
+        <div class="stat-card"><span class="stat-value" style="font-size:17px">${escaparHtml(generoFav)}</span><span class="stat-label">Estilo favorito</span></div>
+      </div>
+      <p class="public-shelf-note">Estante de ${escaparHtml(dados.nome)}</p>
+      <div class="my-shelf" id="estantePublica"></div>
+    `;
+    const shelf = usuarioPagina.querySelector('#estantePublica');
+    if (!livros.length) {
+      shelf.innerHTML = '<p class="public-shelf-note" style="align-self:center;margin:auto">Essa pessoa ainda não tem livros na estante.</p>';
+      return;
+    }
+    livros.forEach((livro, i) => {
+      const spine = document.createElement('div');
+      spine.style.width = (26 + (i % 4) * 6) + 'px';
+      spine.style.height = (58 + Math.min(38, Math.round((livro.paginas || 200) / 20))) + '%';
+      spine.style.background = livro.bg;
+      spine.className = 'spine' + (livro.status === 'lido' ? ' spine-lido' : '');
+      spine.textContent = livro.titulo;
+      spine.title = livro.titulo + ' - ' + livro.autor;
+      spine.addEventListener('click', () => abrirModalLivro(livro.id));
+      shelf.appendChild(spine);
+    });
+  }
+
+  const addBookFormWrap = document.getElementById('addBookFormWrap');
+  const toggleAddBook = document.getElementById('toggleAddBook');
+  toggleAddBook.addEventListener('click', () => {
+    const abrindo = !addBookFormWrap.classList.contains('open');
+    addBookFormWrap.classList.toggle('open');
+    toggleAddBook.textContent = abrindo ? 'Fechar formulário' : '+ Cadastrar um livro novo';
+  });
+  document.getElementById('cancelarNovoLivro').addEventListener('click', () => {
+    ['novoLivroTitulo','novoLivroAutor','novoLivroPaginas','novoLivroContexto'].forEach(id => document.getElementById(id).value = '');
+    addBookFormWrap.classList.remove('open');
+    toggleAddBook.textContent = '+ Cadastrar um livro novo';
+  });
+  document.getElementById('publicarNovoLivro').addEventListener('click', async () => {
+    if (!perfil) { alert('Crie sua estante ou entre com seu e-mail antes de cadastrar um livro.'); return; }
+    if (modoConvidado) { alert('No modo convidado não dá pra cadastrar livros no catálogo. Crie sua conta!'); return; }
+    const titulo = document.getElementById('novoLivroTitulo').value.trim();
+    const autor = document.getElementById('novoLivroAutor').value.trim();
+    const paginas = parseInt(document.getElementById('novoLivroPaginas').value, 10);
+    const genero = document.getElementById('novoLivroGenero').value;
+    const contexto = document.getElementById('novoLivroContexto').value.trim();
+    if (!titulo || !autor || !paginas || !contexto) return;
+
+    const novoLivro = {
+      id: 'com-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
+      titulo, autor, genero, paginas, blurb: contexto, bg: GENERO_COR[genero] || GENERO_COR["Romance"],
+      adicionadoPor: perfil.nome, adicionadoEm: Date.now()
+    };
+    const { error } = await sb.from('community_books').insert({
+      id: novoLivro.id, user_id: perfil.id, titulo, autor, genero, paginas,
+      blurb: contexto, bg: novoLivro.bg, adicionado_por: perfil.nome
+    });
+    if (error) { console.error(error); alert('Não consegui cadastrar o livro agora.'); return; }
+    catalogoComunidade.push(novoLivro);
+
+    ['novoLivroTitulo','novoLivroAutor','novoLivroPaginas','novoLivroContexto'].forEach(id => document.getElementById(id).value = '');
+    atualizarPreviaLivro();
+    addBookFormWrap.classList.remove('open');
+    toggleAddBook.textContent = '+ Cadastrar um livro novo';
+    renderCatalogo();
+
+    const nota = document.getElementById('novoLivroSalvoNote');
+    if (nota) {
+      nota.classList.add('show');
+      setTimeout(() => nota.classList.remove('show'), 2500);
+    }
+  });
+
+  const playlistFormWrap = document.getElementById('playlistFormWrap');
+  const togglePlaylistForm = document.getElementById('togglePlaylistForm');
+  togglePlaylistForm.addEventListener('click', () => {
+    const abrindo = !playlistFormWrap.classList.contains('open');
+    playlistFormWrap.classList.toggle('open');
+    togglePlaylistForm.textContent = abrindo ? 'Fechar formulário' : '+ Adicionar playlist';
+  });
+  document.getElementById('cancelarPlaylist').addEventListener('click', () => {
+    document.getElementById('novaPlaylistLink').value = '';
+    document.getElementById('novaPlaylistComentario').value = '';
+    document.getElementById('playlistErro').style.display = 'none';
+    playlistFormWrap.classList.remove('open');
+    togglePlaylistForm.textContent = '+ Adicionar playlist';
+  });
+  document.getElementById('publicarPlaylist').addEventListener('click', async () => {
+    if (!perfil) { alert('Crie sua estante ou entre com seu e-mail antes de publicar uma playlist.'); return; }
+    if (modoConvidado) { alert('No modo convidado não dá pra publicar playlists. Crie sua conta!'); return; }
+    const linkInput = document.getElementById('novaPlaylistLink');
+    const comentarioInput = document.getElementById('novaPlaylistComentario');
+    const erro = document.getElementById('playlistErro');
+    const link = linkInput.value.trim();
+    const comentario = comentarioInput.value.trim();
+    erro.style.display = 'none';
+
+    if (!link || !comentario) return;
+    const spotifyId = extrairPlaylistId(link);
+    if (!spotifyId) {
+      erro.textContent = 'Não reconheci esse link. Cole o link de uma playlist do Spotify (open.spotify.com/playlist/...).';
+      erro.style.display = 'block';
+      return;
+    }
+
+    const novaPlaylist = {
+      id: 'pl-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
+      spotifyId, comentario, adicionadoPor: perfil.nome, adicionadoEm: Date.now()
+    };
+    const { error } = await sb.from('community_playlists').insert({
+      id: novaPlaylist.id, user_id: perfil.id, spotify_id: spotifyId,
+      comentario, adicionado_por: perfil.nome
+    });
+    if (error) { console.error(error); erro.textContent = 'Não consegui publicar a playlist agora.'; erro.style.display = 'block'; return; }
+    playlistsComunidade.push(novaPlaylist);
+
+    linkInput.value = ''; comentarioInput.value = '';
+    playlistFormWrap.classList.remove('open');
+    togglePlaylistForm.textContent = '+ Adicionar playlist';
+    renderPlaylists();
+
+    const nota = document.getElementById('playlistSalvaNote');
+    if (nota) {
+      nota.classList.add('show');
+      setTimeout(() => nota.classList.remove('show'), 2500);
+    }
+  });
+
+  function renderPlaylists() {
+    const lista = document.getElementById('playlistList');
+    if (playlistsComunidade.length === 0) {
+      lista.innerHTML = '<p class="playlist-empty">Ainda não tem nenhuma playlist da comunidade. Que tal ser a primeira pessoa a compartilhar?</p>';
+      return;
+    }
+    lista.innerHTML = playlistsComunidade.slice().reverse().map(p => `
+      <div class="playlist-card">
+        <span class="playlist-by">Feita por ${escaparHtml(p.adicionadoPor)}:</span>
+        <div class="playlist-embed-wrap">${embedSpotify(p.spotifyId)}</div>
+        <p class="playlist-comment">${escaparHtml(p.comentario)}</p>
+      </div>
+    `).join('');
+  }
+
+  const catalogoGrid = document.getElementById('catalogoGrid');
+  const buscaInput = document.getElementById('buscaInput');
+  let filtroAtivo = 'todos';
+
+  function renderCatalogo() {
+    const termo = buscaInput.value.trim().toLowerCase();
+    catalogoGrid.innerHTML = '';
+    catalogoCompleto().forEach(livro => {
+      const bateBusca = !termo || livro.titulo.toLowerCase().includes(termo) || livro.autor.toLowerCase().includes(termo);
+      const bateFiltro = filtroAtivo === 'todos' || livro.genero === filtroAtivo;
+      if (!bateBusca || !bateFiltro) return;
+
+      const jaAdicionado = estante.some(l => l.id === livro.id);
+      const itemNaEstante = estante.find(l => l.id === livro.id);
+      const terminado = itemNaEstante && itemNaEstante.status === 'lido';
+      const card = document.createElement('div');
+      card.className = 'rec-card';
+      card.innerHTML = `
+        <div class="book-cover ${terminado ? 'is-lido' : ''}" style="background:${livro.bg}">
+          ${terminado ? '<div class="cover-done-ribbon">Lido</div>' : ''}
+          <div class="cover-icon">${GENERO_ICONE[livro.genero] || ''}</div>
+          ${escaparHtml(livro.autor)}
+        </div>
+        <p class="rec-title">${escaparHtml(livro.titulo)}</p>
+        <p class="rec-author">${escaparHtml(livro.autor)}</p>
+        <p class="rec-blurb">${escaparHtml(livro.blurb)}</p>
+        ${livro.adicionadoPor ? `<p class="rec-added-by">Cadastrado por ${escaparHtml(livro.adicionadoPor)}</p>` : ''}
+        <div class="rec-footer"><span class="genre-tag">${escaparHtml(livro.genero)}</span><span class="book-status-label">${livro.paginas} pág.</span></div>
+        <button type="button" class="rec-add-btn ${jaAdicionado ? 'added' : ''}">${jaAdicionado ? 'Já está na sua estante ✓' : '+ Adicionar à estante'}</button>
+      `;
+      card.addEventListener('click', () => abrirModalLivro(livro.id));
+      card.querySelector('.rec-add-btn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (estante.some(l => l.id === livro.id)) return;
+        adicionarLivroNaEstante(livro);
+        await salvarContaAtual();
+        renderEstante();
+        renderCatalogo();
+      });
+      catalogoGrid.appendChild(card);
+    });
+  }
+  buscaInput.addEventListener('input', renderCatalogo);
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      filtroAtivo = chip.dataset.filter;
+      renderCatalogo();
+    });
+  });
+
+  function renderPerfilStats() {
+    if (!perfil) return;
+    document.getElementById('perfilAvatarGrande').innerHTML = avatarHTML(perfil.avatar);
+    document.getElementById('perfilNome').textContent = perfil.nome;
+    document.getElementById('perfilHandle').textContent = perfil.email;
+    document.getElementById('perfilBio').textContent = perfil.bio || '';
+    document.getElementById('statLivros').textContent = estante.length;
+    const totalPaginas = estante.reduce((soma, l) => soma + (l.paginas || 0), 0);
+    document.getElementById('statPaginas').textContent = totalPaginas.toLocaleString('pt-BR');
+    const totalPaginasLidas = estante.reduce((soma, l) => soma + Math.min(l.paginaAtual || 0, l.paginas || 0), 0);
+    document.getElementById('statPaginasLidas').textContent = totalPaginasLidas.toLocaleString('pt-BR');
+    if (estante.length === 0) {
+      document.getElementById('statGenero').textContent = '-';
+    } else {
+      const contagem = {};
+      estante.forEach(l => { contagem[l.genero] = (contagem[l.genero] || 0) + 1; });
+      const generoFavorito = Object.keys(contagem).reduce((a, b) => contagem[a] >= contagem[b] ? a : b);
+      document.getElementById('statGenero').textContent = generoFavorito;
+    }
+  }
+
+
+  // --- Editar avatar no perfil ---
+  (function () {
+    const editor = document.getElementById('perfilEditor');
+    const picker = document.getElementById('avatarPickerPerfil');
+    const preview = document.getElementById('fotoPreviewPerfil');
+    const inputF = document.getElementById('inputFotoPerfil');
+    const btnEscolher = document.getElementById('btnEscolherFotoPerfil');
+    const btnRemover = document.getElementById('btnRemoverFotoPerfil');
+    let escolha = null;
+
+    function marcar(valor) {
+      escolha = valor;
+      const ehFoto = typeof valor === 'string' && valor.startsWith('data:');
+      picker.querySelectorAll('.avatar-option').forEach(b => b.classList.toggle('selected', !ehFoto && b.dataset.avatar === valor));
+      preview.hidden = !ehFoto;
+      preview.innerHTML = ehFoto ? `<img src="${valor}" alt="Prévia da sua foto de perfil" />` : '';
+      btnRemover.hidden = !ehFoto;
+      btnEscolher.textContent = ehFoto ? 'Trocar foto' : 'Ou use uma foto sua';
+    }
+
+    Object.keys(AVATARS).forEach(key => {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'avatar-option'; btn.dataset.avatar = key;
+      btn.innerHTML = AVATARS[key] + `<span>${AVATAR_LABELS[key]}</span>`;
+      btn.addEventListener('click', () => marcar(key));
+      picker.appendChild(btn);
+    });
+
+    btnEscolher.addEventListener('click', () => inputF.click());
+    btnRemover.addEventListener('click', () => { inputF.value = ''; marcar('gato'); });
+    inputF.addEventListener('change', () => {
+      const file = inputF.files && inputF.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const size = 192;
+          const canvas = document.createElement('canvas');
+          canvas.width = size; canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          const min = Math.min(img.width, img.height);
+          ctx.drawImage(img, (img.width - min) / 2, (img.height - min) / 2, min, min, 0, 0, size, size);
+          marcar(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    const inputNomePerfil = document.getElementById('inputNomePerfil');
+    const inputBioPerfil = document.getElementById('inputBioPerfil');
+    document.getElementById('btnEditarAvatar').addEventListener('click', () => {
+      if (!perfil) return;
+      if (!editor.hidden) { editor.hidden = true; return; }
+      marcar(perfil.avatar);
+      inputNomePerfil.value = perfil.nome || '';
+      inputBioPerfil.value = perfil.bio || '';
+      editor.hidden = false;
+      editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    document.getElementById('btnCancelarAvatar').addEventListener('click', () => { editor.hidden = true; });
+    document.getElementById('btnSalvarAvatar').addEventListener('click', async () => {
+      if (!perfil) return;
+      const novoNome = inputNomePerfil.value.trim();
+      if (novoNome) perfil.nome = novoNome;
+      perfil.bio = inputBioPerfil.value.trim();
+      if (escolha) perfil.avatar = escolha;
+      editor.hidden = true;
+      renderPerfilStats();
+      renderHeaderUser();
+      await salvarPreferencias();
+    });
+  })();
+
+
+
+  document.getElementById('btnTrocarConta').addEventListener('click', async () => {
+    const confirmar = confirm('Você será desconectada(o) desta conta. Sua estante continua salva na sua conta e você pode entrar de novo com seu e-mail e senha. Continuar?');
+    if (!confirmar) return;
+    try { await sb.auth.signOut(); } catch (e) {}
+    perfil = null; estante = []; modoConvidado = false;
+    document.body.classList.remove('guest-mode');
+    inputUsername.value = ''; inputEmail.value = ''; inputSenha.value = ''; avatarEscolhido = null;
+    if (typeof inputFoto !== 'undefined') { inputFoto.value = ''; fotoPreview.hidden = true; fotoPreview.innerHTML = ''; btnRemoverFoto.hidden = true; btnEscolherFoto.textContent = 'Ou use uma foto sua'; }
+    document.querySelectorAll('.avatar-option').forEach(b => b.classList.remove('selected'));
+    checarFormPerfil();
+    showScreen('screen-welcome');
+  });
+
+  /* ======= Seletor de paleta ======= */
+  const PALETAS = [
+    { id: 'verde', nome: 'Verde', cor: '#3F7D57' },
+    { id: 'azul', nome: 'Azul', cor: '#2F6FA8' },
+    { id: 'nude', nome: 'Nude', cor: '#A87355' },
+    { id: 'pb', nome: 'Preto e branco', cor: '#2A2A2A' },
+    { id: 'roxo', nome: 'Roxo', cor: '#6B3FA0' }
+  ];
+  let paletaAtual = 'verde';
+
+  function aplicarPaleta(id, persistir) {
+    paletaAtual = PALETAS.some(p => p.id === id) ? id : 'verde';
+    root.setAttribute('data-palette', paletaAtual);
+    try { localStorage.setItem('gicabooks-paleta', paletaAtual); } catch (e) {}
+    document.querySelectorAll('.palette-opt').forEach(o => o.classList.toggle('selected', o.dataset.paleta === paletaAtual));
+    if (persistir && perfil && !modoConvidado) { perfil.tema = paletaAtual; salvarPreferencias(); }
+  }
+
+  function montarPopPaleta(pop) {
+    pop.innerHTML = '<h4>Paleta de cores</h4><p>Escolha uma cor para transformar todo o visual do app.</p><div class="palette-grid">' +
+      PALETAS.map(p => `<button type="button" class="palette-opt" data-paleta="${p.id}"><span class="dot" style="background:${p.cor}"></span>${p.nome}</button>`).join('') +
+      '</div>';
+    pop.querySelectorAll('.palette-opt').forEach(btn => {
+      btn.addEventListener('click', () => { aplicarPaleta(btn.dataset.paleta, true); });
+    });
+  }
+  ['palettePopCorner', 'palettePopHeader'].forEach(id => { const el = document.getElementById(id); if (el) montarPopPaleta(el); });
+  [['paletteFabCorner', 'palettePopCorner'], ['paletteBtnHeader', 'palettePopHeader']].forEach(([b, p]) => {
+    const btn = document.getElementById(b), pop = document.getElementById(p);
+    if (!btn || !pop) return;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const abrir = !pop.classList.contains('open');
+      document.querySelectorAll('.palette-pop').forEach(x => x.classList.remove('open'));
+      if (abrir) pop.classList.add('open');
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.palette-wrap')) document.querySelectorAll('.palette-pop').forEach(x => x.classList.remove('open'));
+  });
+
+  /* ======= Prévia do formulário de livro ======= */
+  function atualizarPreviaLivro() {
+    const titulo = document.getElementById('novoLivroTitulo').value.trim();
+    const autor = document.getElementById('novoLivroAutor').value.trim();
+    const paginas = parseInt(document.getElementById('novoLivroPaginas').value, 10) || 0;
+    const genero = document.getElementById('novoLivroGenero').value;
+    const cor = GENERO_COR[genero] || GENERO_COR['Romance'];
+    const spine = document.getElementById('previewSpine');
+    const cover = document.getElementById('previewCover');
+    spine.style.background = cor; cover.style.background = cor;
+    spine.textContent = titulo || 'Seu livro';
+    spine.style.height = Math.max(110, Math.min(160, 110 + (paginas / 12))) + 'px';
+    document.getElementById('previewCoverAutor').textContent = autor || 'Autora(o)';
+    document.getElementById('previewTitulo').textContent = titulo || 'Seu livro';
+    document.getElementById('previewMeta').textContent = `${genero} · ${paginas} páginas`;
+    const contexto = document.getElementById('novoLivroContexto').value;
+    const count = document.getElementById('contextoCount');
+    if (count) count.textContent = contexto.length + '/400';
+  }
+  ['novoLivroTitulo','novoLivroAutor','novoLivroPaginas','novoLivroContexto','novoLivroGenero'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.addEventListener('input', atualizarPreviaLivro); el.addEventListener('change', atualizarPreviaLivro); }
+  });
+
+  async function init() {
+    try { aplicarPaleta(localStorage.getItem('gicabooks-paleta') || 'verde', false); } catch (e) {}
+    atualizarPreviaLivro();
+    await carregarComunidade();
+    document.getElementById('playlistDemoEmbed').innerHTML = embedSpotify(PLAYLIST_GICA_ID);
+
+    const { data } = await sb.auth.getSession();
+    if (data && data.session) {
+      await carregarPerfilDoUsuario(data.session.user);
+      await carregarEstante();
+    }
+
+    document.getElementById('loadingScreen').style.display = 'none';
+
+    if (perfil) { renderHeaderUser(); renderPerfilStats(); renderEstante(); showScreen('screen-estante'); }
+    else showScreen('screen-welcome');
+  }
+  init();
+</script>
+
+</body>
+</html>
